@@ -1,0 +1,2298 @@
+--arsa_kayit_listele.cs--
+using System;
+using System.Collections.Generic;
+using System.ComponentModel;
+using System.Data;
+using System.Drawing;
+using System.Linq;
+using System.Text;
+using System.Threading.Tasks;
+using System.Windows.Forms;
+using MySql.Data;
+using MySql.Data.MySqlClient;
+namespace emlak_otomasyonu
+{     
+    public partial class arsa_kayit_listele : Form
+    {
+        string imar_durum, metrekare, il, ilce, adres;
+        public MySqlConnection mysqlbaglan = new MySqlConnection("Server='';Database=emlak_sistemi;Uid=yeni;Pwd=123;Port=3306");
+        private void arsa_kayit_listele_Load(object sender, EventArgs e)
+        {
+            try
+            {
+                mysqlbaglan.Open(); //oluşturtuğumuz tanımı çalıştırarak açılmasını sağlıyoruz
+                if (mysqlbaglan.State != ConnectionState.Closed) // tanımın durumunu kontrol ediyoruz bağlı mı değil mi
+                {
+                    //MessageBox.Show("Bağlantı Başarılı Bir Şekilde Gerçekleşti");  bağlı ise buradaki işlemler gerçekleşiyor
+                }
+                else
+                {
+                    // MessageBox.Show("Maalesef Bağlantı Yapılamadı...!"); // bağlı değilse buradaki işlemler gerçekleşiyor
+                }
+            }
+            catch (Exception err)
+            {
+                MessageBox.Show("Hata! " + err.Message, "Hata Oluştu", MessageBoxButtons.OK, MessageBoxIcon.Error);
+            }
+            MySqlDataAdapter listele = new MySqlDataAdapter("select * from arsa_ozellikler", mysqlbaglan);
+            DataTable oku = new DataTable();
+            listele.Fill(oku);
+            dataGridView1.DataSource = oku;
+        }
+
+        int fiyat, adano, parselno, paftano;
+        public arsa_kayit_listele()
+        {
+            InitializeComponent();
+        }
+
+        private void listele_Click(object sender, EventArgs e)
+        {
+            imar_durum = txtimar.Text;
+            metrekare = txtmetrekare.Text;
+            fiyat = Convert.ToInt32(txtfiyat.Text);
+            adano = Convert.ToInt32(txtadano.Text);
+            parselno = Convert.ToInt32(txtparselno.Text);
+            paftano = Convert.ToInt32(txtpaftano.Text);
+            il = txtil.Text;
+            ilce = txtilce.Text;
+            adres = txtadres.Text;
+            MySqlDataAdapter listele = new MySqlDataAdapter("select * from arsa_ozellikler where imar_durum='"+imar_durum+"' and metrekare='"+metrekare+"' and fiyat="+fiyat+" and adano="+adano+" and parselno="+parselno+" and paftano="+paftano+ " and arsa_adres_ID=(select arsa_adres_ID from arsa_adres where il='"+il+"' and ilce='"+ilce+"' and acik_adres='"+adres+"')", mysqlbaglan);
+            DataTable oku = new DataTable();
+            listele.Fill(oku);
+            dataGridView1.DataSource = oku;
+        }
+    }
+}
+
+--arsakayit.cs--
+using System;
+using System.Collections.Generic;
+using System.ComponentModel;
+using System.Data;
+using System.Drawing;
+using System.Linq;
+using System.Text;
+using System.Threading.Tasks;
+using System.Windows.Forms;
+using MySql.Data;
+using MySql.Data.MySqlClient;
+namespace emlak_otomasyonu
+{
+    public partial class musterisec : Form
+    {
+        string imar_durum, tapu_durum, kredi_uygun, metre_kare ,il, ilce, adres;
+        int ada_no, parsel_no, pafta_no, kat_karsiligi, id_si, kaks, adresid, fiyat,arsa_adres_id,musteri_id,sil_id,guncelle_id;
+        public MySqlConnection mysqlbaglan = new MySqlConnection("Server='';Database=emlak_sistemi;Uid=yeni;Pwd=123;Port=3306");
+        private void label20_Click(object sender, EventArgs e)
+        {
+            kayit_id.Enabled = true;
+            label13.Enabled = true;
+            kontrol.Visible = true;
+            MessageBox.Show("Kayıdı silenecek arsanın  ıd sini girmeyi unutmayınız.");
+        }
+
+        private void label19_Click(object sender, EventArgs e)
+        {
+            kayit_id.Enabled = true;
+            label13.Enabled= true;
+            kontrol.Visible = true;
+            MessageBox.Show("Kayıdı silenecek arsanın sadece ıd sini giriniz.");
+        }
+
+        private void button2_Click(object sender, EventArgs e)
+        {
+            arsa_kayit_listele liste = new arsa_kayit_listele();
+            liste.Show();
+        }
+
+        public int satici_no { get; set; }
+        
+
+        private void txtil_TextChanged(object sender, EventArgs e)
+        {
+            txtsaticiid.Text = satici_no.ToString();
+        }
+
+      
+        private void button1_Click(object sender, EventArgs e)
+        {
+            silme_islemi liste = new silme_islemi();
+            liste.Show();
+            this.Hide();
+        }
+
+        private void rdkredi_CheckedChanged_1(object sender, EventArgs e)
+        {
+            if (rdkredi.Checked)
+            {
+                kredi_uygun = rdkredi.Text;
+            }
+        }
+
+        private void rdkredi2_CheckedChanged_1(object sender, EventArgs e)
+        {
+            if (rdkredi2.Checked)
+            {
+                kredi_uygun = rdkredi2.Text;
+            }
+        }
+
+        private void pictureBox3_Click(object sender, EventArgs e)
+        {
+            tapu_durum = txttapu.Text;
+            metre_kare = txtmetrekare.Text;
+            ada_no = Convert.ToInt32(txtadano.Text);
+            parsel_no = Convert.ToInt32(txtparselno.Text);
+            pafta_no = Convert.ToInt32(txtpaftano.Text);
+            kat_karsiligi = Convert.ToInt32(txtkat.Text);
+            //id_si = Convert.ToInt32(kayit_id.Text);
+            kaks = Convert.ToInt32(txtkaks.Text);
+           // satici_no = Convert.ToInt32(txtsaticiid.Text);
+            il = txtil.Text;
+            ilce = txtilce.Text;
+            adres = txtadres.Text;
+            fiyat = Convert.ToInt32(txtfiyat.Text);
+            MySqlCommand kayit_ekle2 = new MySqlCommand("insert into arsa_adres(il,ilce,acik_adres) values('" + il + "','" + ilce + "','" + adres + "')", mysqlbaglan);
+            kayit_ekle2.ExecuteNonQuery();
+            MySqlCommand komut2 = new MySqlCommand("SELECT * from arsa_adres where arsa_adres_ID =(select max(arsa_adres_ID) from arsa_adres)", mysqlbaglan);
+            MySqlDataReader oku2 = komut2.ExecuteReader();
+            while (oku2.Read())
+            {
+                adresid = Convert.ToInt32(oku2["arsa_adres_ID"].ToString());
+            }
+            oku2.Close();
+            MySqlCommand kayit_ekle = new MySqlCommand("insert into arsa_ozellikler(imar_durum,tapu,fiyat,kreadiye_uygunluk,metrekare,adano,parselno,paftano,kat_karsiligi,kaks,arsa_adres_ID,musteriID) values('"+imar_durum+"','"+tapu_durum+"',"+fiyat+",'"+kredi_uygun+"','"+metre_kare+"',"+ada_no+","+parsel_no+","+pafta_no+","+kat_karsiligi+ ","+kaks+","+adresid+"," + satici_no+ ")", mysqlbaglan);
+            kayit_ekle.ExecuteNonQuery();
+            MessageBox.Show("Başarı ile kaydedildi");
+        }
+
+    
+ 
+
+        private void rdimar_CheckedChanged(object sender, EventArgs e)
+        {
+            if (rdimar.Checked) { 
+            imar_durum = rdimar.Text;
+            }
+        }
+
+        private void rdimar2_CheckedChanged(object sender, EventArgs e)
+        {
+            if (rdimar2.Checked) {
+            imar_durum = rdimar2.Text;
+            }
+        }
+        public musterisec()
+        {
+            InitializeComponent();
+           
+        }
+        private void arsakayit_Load(object sender, EventArgs e)
+        {
+            this.FormBorderStyle = FormBorderStyle.FixedSingle;
+            try
+            {
+                mysqlbaglan.Open(); //oluşturtuğumuz tanımı çalıştırarak açılmasını sağlıyoruz
+                if (mysqlbaglan.State != ConnectionState.Closed) // tanımın durumunu kontrol ediyoruz bağlı mı değil mi
+                {
+                    MessageBox.Show("Bağlantı Başarılı Bir Şekilde Gerçekleşti"); // bağlı ise buradaki işlemler gerçekleşiyor
+                }
+                else
+                {
+                    MessageBox.Show("Maalesef Bağlantı Yapılamadı...!"); // bağlı değilse buradaki işlemler gerçekleşiyor
+                }
+            }
+            catch (Exception err)
+            {
+                MessageBox.Show("Hata! " + err.Message, "Hata Oluştu", MessageBoxButtons.OK, MessageBoxIcon.Error);
+            }
+        }
+
+        private void pictureBox6_Click(object sender, EventArgs e)
+        {
+            Form1 frm1 = new Form1();
+            this.Hide();
+            frm1.Show();
+        }
+
+        private void pictureBox5_Click(object sender, EventArgs e)
+        {
+            sil_id=Convert.ToInt32(kayit_id.Text);
+            MySqlCommand kayitsil = new MySqlCommand("DELETE FROM arsa_ozellikler where arsa_ID="+sil_id+" ",mysqlbaglan);
+            kayitsil.ExecuteNonQuery();
+            MySqlCommand kayitsil2 = new MySqlCommand("DELETE FROM arsa_adres where arsa_adres_ID=" + sil_id + " ", mysqlbaglan);
+            kayitsil2.ExecuteNonQuery();
+            kontrol.Text = "Silme işlemi tamamlandı";
+        }
+
+        private void pictureBox4_Click(object sender, EventArgs e)
+        {
+            tapu_durum = txttapu.Text;
+            metre_kare = txtmetrekare.Text;
+            ada_no = Convert.ToInt32(txtadano.Text);
+            parsel_no = Convert.ToInt32(txtparselno.Text);
+            pafta_no = Convert.ToInt32(txtpaftano.Text);
+            kat_karsiligi = Convert.ToInt32(txtkat.Text);
+            //id_si = Convert.ToInt32(kayit_id.Text);
+            kaks = Convert.ToInt32(txtkaks.Text);
+            // satici_no = Convert.ToInt32(txtsaticiid.Text);
+            il = txtil.Text;
+            ilce = txtilce.Text;
+            adres = txtadres.Text;
+            fiyat = Convert.ToInt32(txtfiyat.Text);
+            guncelle_id = Convert.ToInt32(kayit_id.Text);
+            MySqlCommand guncelle = new MySqlCommand("update arsa_ozellikler set imar_durum='"+imar_durum+"' ,tapu='"+tapu_durum+"',fiyat="+fiyat+",kreadiye_uygunluk='"+kredi_uygun+"',metrekare="+metre_kare+",adano="+ada_no+",parselno="+parsel_no+",paftano="+pafta_no+" kat_karsiligi="+kat_karsiligi+",kaks="+kaks+" ,musteriID="+satici_no+" where arsa_ID="+guncelle_id+"",mysqlbaglan);
+            guncelle.ExecuteNonQuery();
+            MySqlCommand guncelle2 = new MySqlCommand("update arsa_adres set il='"+il+"',ilce='"+ilce+"',acik_adres='"+adres+"' where arsa_adres_ID="+guncelle_id+" ", mysqlbaglan);
+            guncelle2.ExecuteNonQuery();
+
+        }
+    }
+}
+
+
+--evkayit.cs--
+
+using System;
+using System.Collections.Generic;
+using System.ComponentModel;
+using System.Data;
+using System.Drawing;
+using System.Linq;
+using System.Text;
+using System.Threading.Tasks;
+using System.Windows.Forms;
+using MySql.Data;
+using MySql.Data.MySqlClient;
+namespace emlak_otomasyonu
+{
+    public partial class evkayit : Form
+    {
+        string krediye_uygun, metrekare, odasayisi, isitma, kayit_tarihi, il, ilce, cadde, mahalle, apartman_adi, bina_no,emlak_tipi;
+        public MySqlConnection mysqlbaglan = new MySqlConnection("Server='';Database=emlak_sistemi;Uid=yeni;Pwd=123;Port=3306");
+
+        private void cmbtoplam_kat_sayisi_SelectedIndexChanged(object sender, EventArgs e)
+        {
+            bina_kat_sayisi = Convert.ToInt32(cmbtoplam_kat_sayisi.Text);
+        }
+
+        private void button1_Click(object sender, EventArgs e)
+        {
+            silme_islemi musteri_listele = new silme_islemi();
+            musteri_listele.Show();
+        }
+
+        private void label27_Click(object sender, EventArgs e)
+        {
+            kayit_id.Enabled = true;
+            id.Enabled = true;
+            kontrol.Visible = true;
+            MessageBox.Show("Kayıdı silenecek müşterinin sadece ıd sini giriniz.");
+        }
+
+        private void label26_Click(object sender, EventArgs e)
+        {
+            kayit_id.Enabled = true;
+            id.Enabled = true;
+            kontrol.Visible = true;
+            MessageBox.Show("Kayıdı güncellenecek müşterinin ıd sini giriniz.");
+        }
+
+        private void button2_Click(object sender, EventArgs e)
+        {
+            konut_listele konut_listesi = new konut_listele();
+            konut_listesi.Show();
+        }
+
+        private void rdsatis_tur2_CheckedChanged(object sender, EventArgs e)
+        {
+            satis_turu = 2;
+        }
+
+        private void rdsatis_tur1_CheckedChanged(object sender, EventArgs e)
+        {
+            satis_turu = 1;
+        }
+
+        private void rdkredi2_CheckedChanged(object sender, EventArgs e)
+        {
+            krediye_uygun = rdkredi2.Text;
+        }
+
+        private void rdkredi_CheckedChanged(object sender, EventArgs e)
+        {
+            krediye_uygun = rdkredi.Text;
+        }
+
+        int fiyat, banyo_sayisi, bulundugu_kat, balkon_sayisi, saticino, aidat_tutari, bina_kat_sayisi, bina_yasi, satis_turu, daire_no, konut_adlari_id, konut_konum_id, konut_adres_id, bina_id,sil_id;
+        public evkayit()
+        {
+            InitializeComponent();
+        }
+
+        private void evkayit_Load(object sender, EventArgs e)
+        {
+            this.FormBorderStyle = FormBorderStyle.FixedSingle;
+            try
+            {
+                mysqlbaglan.Open(); //oluşturtuğumuz tanımı çalıştırarak açılmasını sağlıyoruz
+                if (mysqlbaglan.State != ConnectionState.Closed) // tanımın durumunu kontrol ediyoruz bağlı mı değil mi
+                {
+                    MessageBox.Show("Bağlantı Başarılı Bir Şekilde Gerçekleşti"); // bağlı ise buradaki işlemler gerçekleşiyor
+                }
+                else
+                {
+                    MessageBox.Show("Maalesef Bağlantı Yapılamadı...!"); // bağlı değilse buradaki işlemler gerçekleşiyor
+                }
+            }
+            catch (Exception err)
+            {
+                MessageBox.Show("Hata! " + err.Message, "Hata Oluştu", MessageBoxButtons.OK, MessageBoxIcon.Error);
+            }
+
+        }
+
+        private void pictureBox6_Click(object sender, EventArgs e)
+        {   Form1 frm1 = new Form1();
+            this.Hide();
+            frm1.Show();
+        }
+
+        private void pictureBox4_Click(object sender, EventArgs e)
+        {
+            //konut_ozelliklere_kaydedilecekler
+            fiyat = Convert.ToInt32(txt_fiyat.Text);
+            //kredi uygunluk var
+            metrekare = txtmetrekare.Text;
+            odasayisi = txtodasayisi.Text;
+            //adresıd otomatik gelcek
+            banyo_sayisi = Convert.ToInt32(txtbanyo_sayisi.Text);
+            bulundugu_kat = Convert.ToInt32(txtbulunan_kat.Text);
+            balkon_sayisi = Convert.ToInt32(txtbalkon_sayisi.Text);
+            isitma = txtisitma.Text;
+            saticino = Convert.ToInt32(txtsatici.Text);
+            aidat_tutari = Convert.ToInt32(txtaidat_tutarı.Text);
+            kayit_tarihi = kayit_tarih.Text;
+            //Binaid kayıt olanları yaz
+            bina_yasi = Convert.ToInt32(txtbina_yasi.Text);
+            emlak_tipi = txtemlaktipi.Text;
+            //konut adresıd  konutkonumıd,konutadlarııd otomatik gelcek
+            daire_no = Convert.ToInt32(txt_daire_no.Text);
+            //konut konum yazılcaklar
+            il = txt_il.Text;
+            ilce = txt_ilce.Text;
+            cadde = txt_cadde.Text;
+            mahalle = txt_mahalle.Text;
+            //konutadları yazılcaklar
+            apartman_adi = txtapartman_adi.Text;
+            bina_no = txtbinano.Text;
+            sil_id = Convert.ToInt32(kayit_id.Text);
+            MySqlCommand kayit_guncelle1 = new MySqlCommand("update konut_ozellikler set konut_fiyat="+fiyat+",kreadiye_uygunluk='"+krediye_uygun+"',metrekare='"+metrekare+"',oda_sayisi='"+odasayisi+"',banyo_sayisi="+banyo_sayisi+",bulundugu_kat="+bulundugu_kat+",balkon_sayisi="+balkon_sayisi+",isitma='"+isitma+"',musteriID="+saticino+",aidat_tutari="+aidat_tutari+",kayit_tarihi='"+kayit_tarihi+"',satis_turu_ID="+satis_turu+ ",konut_tipi='" + emlak_tipi + "' where konut_ozellik_ID=" + sil_id+" ",mysqlbaglan);
+            kayit_guncelle1.ExecuteNonQuery();
+            MySqlCommand kayit_guncelle2 = new MySqlCommand("update bina set bina_kat_sayisi="+bina_kat_sayisi+",bina_yasi="+bina_yasi+" where bina_ID="+sil_id+" ",mysqlbaglan);
+            kayit_guncelle2.ExecuteNonQuery();
+            MySqlCommand kayit_guncelle3 = new MySqlCommand("update konutlar_konum set il_adi='"+il+"' , ilce_adi='"+ilce+"',cadde_adi='"+cadde+"',mahalle_adi='"+mahalle+"' where konut_konum_ID="+sil_id+" ",mysqlbaglan);
+            kayit_guncelle3.ExecuteNonQuery();
+            MySqlCommand kayit_guncelle4 = new MySqlCommand("update konut_adlari set apartman_adi='"+apartman_adi+"',bina_no='"+bina_no+ "',daire_no=" + daire_no + " where konut_adlari_ID=" + sil_id+"",mysqlbaglan);
+            kayit_guncelle4.ExecuteNonQuery();
+            kontrol.Text = "Başarıyla güncellendi.";
+        }
+
+        private void pictureBox5_Click(object sender, EventArgs e)
+        {
+            sil_id = Convert.ToInt32(kayit_id.Text);
+            MySqlCommand kayitsil = new MySqlCommand("DELETE FROM konut_ozellikler where konut_ozellik_ID=" + sil_id + " ", mysqlbaglan);
+            kayitsil.ExecuteNonQuery();
+            MySqlCommand kayitsil2 = new MySqlCommand("DELETE FROM bina where bina_ID=" + sil_id + " ", mysqlbaglan);
+            kayitsil2.ExecuteNonQuery();
+            MySqlCommand kayitsil3 = new MySqlCommand("DELETE FROM konutlar_konum where konut_konum_ID=" + sil_id + " ", mysqlbaglan);
+            kayitsil3.ExecuteNonQuery();
+            MySqlCommand kayitsil4 = new MySqlCommand("DELETE FROM konut_adlari where konut_adlari_ID=" + sil_id + " ", mysqlbaglan);
+            kayitsil4.ExecuteNonQuery();
+            MySqlCommand kayitsil5 = new MySqlCommand("DELETE FROM konut_adresler where konut_adres_ID=" + sil_id + " ", mysqlbaglan);
+            kayitsil5.ExecuteNonQuery();
+            kontrol.Text = "Silme işlemi başarı ile gerçekleştirildi";
+
+        }
+
+        private void pictureBox3_Click(object sender, EventArgs e)
+        {
+            //konut_ozelliklere_kaydedilecekler
+            fiyat = Convert.ToInt32(txt_fiyat.Text);
+            //kredi uygunluk var
+            metrekare = txtmetrekare.Text;
+            odasayisi = txtodasayisi.Text;
+            //adresıd otomatik gelcek
+            banyo_sayisi= Convert.ToInt32(txtbanyo_sayisi.Text);
+            bulundugu_kat = Convert.ToInt32(txtbulunan_kat.Text);
+            balkon_sayisi = Convert.ToInt32(txtbalkon_sayisi.Text);
+            isitma = txtisitma.Text;
+            saticino =Convert.ToInt32(txtsatici.Text);
+            aidat_tutari = Convert.ToInt32(txtaidat_tutarı.Text);
+            kayit_tarihi = kayit_tarih.Text;
+            //Binaid kayıt olanları yaz
+            bina_yasi = Convert.ToInt32(txtbina_yasi.Text);
+            emlak_tipi = txtemlaktipi.Text;
+            //konut adresıd  konutkonumıd,konutadlarııd otomatik gelcek
+            daire_no = Convert.ToInt32(txt_daire_no.Text);
+            //konut konum yazılcaklar
+            il = txt_il.Text;
+            ilce = txt_ilce.Text;
+            cadde = txt_cadde.Text;
+            mahalle = txt_mahalle.Text;
+            //konutadları yazılcaklar
+            apartman_adi = txtapartman_adi.Text;
+            bina_no = txtbinano.Text;
+            //satisturu bilgisini alındı
+            MySqlCommand konut_adları_kayit_ekle = new MySqlCommand("insert into konut_adlari(apartman_adi,bina_no,daire_no) values('"+apartman_adi+"','"+bina_no+"',"+daire_no+")",mysqlbaglan);
+            konut_adları_kayit_ekle.ExecuteNonQuery();
+            //konutadlarııd alınıyor
+            MySqlCommand komut2 = new MySqlCommand("SELECT * from konut_adlari where konut_adlari_ID =(select max(konut_adlari_ID) from konut_adlari)", mysqlbaglan);
+            MySqlDataReader oku2 = komut2.ExecuteReader();
+            while (oku2.Read())
+            {
+                konut_adlari_id = Convert.ToInt32(oku2["konut_adlari_ID"].ToString());
+            }
+            oku2.Close();
+            MySqlCommand konut_konum_kayit_ekle = new MySqlCommand("insert into konutlar_konum(il_adi,ilce_adi,cadde_adi,mahalle_adi) values('"+il+"','"+ilce+"','"+cadde+"','"+mahalle+"')",mysqlbaglan);
+            konut_konum_kayit_ekle.ExecuteNonQuery();
+            //konutkonumıd alınıyor
+            MySqlCommand komut3 = new MySqlCommand("SELECT * from konutlar_konum where konut_konum_ID =(select max(konut_konum_ID) from konutlar_konum)", mysqlbaglan);
+            MySqlDataReader oku3 = komut3.ExecuteReader();
+            while (oku3.Read())
+            {
+                konut_konum_id = Convert.ToInt32(oku3["konut_konum_ID"].ToString());
+            }
+            oku3.Close();
+            MySqlCommand konut_adres_kayit_ekle = new MySqlCommand("insert into konut_adresler(konut_konum_ID,konut_adlari_ID) values("+konut_konum_id+","+konut_adlari_id+")",mysqlbaglan);
+            konut_adres_kayit_ekle.ExecuteNonQuery();
+            MySqlCommand komut4 = new MySqlCommand("SELECT * from konut_adresler where konut_adres_ID =(select max(konut_adres_ID) from konut_adresler)", mysqlbaglan);
+            MySqlDataReader oku4 = komut4.ExecuteReader();
+            while (oku4.Read())
+            {
+                konut_adres_id = Convert.ToInt32(oku4["konut_adres_ID"].ToString());
+            }
+            oku4.Close();
+            MySqlCommand bina_kayit_ekle = new MySqlCommand("insert into bina(bina_kat_sayisi,bina_yasi) values("+bina_kat_sayisi+","+bina_yasi+")",mysqlbaglan);
+            bina_kayit_ekle.ExecuteNonQuery();
+            MySqlCommand komut5 = new MySqlCommand("SELECT * from bina where bina_ID =(select max(bina_ID) from bina)", mysqlbaglan);
+            MySqlDataReader oku5 = komut5.ExecuteReader();
+            while (oku5.Read())
+            {
+                bina_id= Convert.ToInt32(oku5["bina_ID"].ToString());
+            }
+            oku5.Close();
+            MySqlCommand evkayit_ekle = new MySqlCommand("insert into konut_ozellikler(konut_fiyat,kreadiye_uygunluk,metrekare,oda_sayisi,konut_adres_ID,banyo_sayisi,bulundugu_kat,balkon_sayisi,isitma,musteriID,aidat_tutari,kayit_tarihi,bina_ID,satis_turu_ID,konut_tipi) values("+fiyat+",'"+krediye_uygun+"','"+metrekare+"','"+odasayisi+"',"+konut_adres_id+","+banyo_sayisi+","+bulundugu_kat+","+balkon_sayisi+",'"+isitma+"',"+saticino+","+aidat_tutari+",'"+kayit_tarihi+"',"+bina_id+","+satis_turu+ ",'" + emlak_tipi + "')", mysqlbaglan);
+            evkayit_ekle.ExecuteNonQuery();
+            MessageBox.Show("Başarıyla Kaydedildi");
+
+        }
+    }
+}
+
+--Form1.cs--
+
+using System;
+using System.Collections.Generic;
+using System.ComponentModel;
+using System.Data;
+using System.Drawing;
+using System.Linq;
+using System.Text;
+using System.Threading.Tasks;
+using System.Windows.Forms;
+using MySql.Data;
+using MySql.Data.MySqlClient;
+namespace emlak_otomasyonu
+{
+    public partial class Form1 : Form
+    {
+        string personel_adi, sifre,secenek="";
+        public MySqlConnection mysqlbaglan = new MySqlConnection("Server='';Database=emlak_sistemi;Uid=yeni;Pwd=123;Port=3306");
+        public Form1()
+        {
+            InitializeComponent();
+            panel1.BackColor = Color.FromArgb(240,Color.DarkOrange);
+            panel2.BackColor = Color.FromArgb(190, Color.Black);
+            panel3.BackColor = Color.FromArgb(190, Color.Black);
+            label1.BackColor = Color.FromArgb(0, 0, 0, 0);
+            label2.BackColor = Color.FromArgb(0, 0, 0, 0);
+            label3.BackColor = Color.FromArgb(0, 0, 0, 0);
+            personel_sifre.UseSystemPasswordChar = true;
+
+        }
+
+        private void pictureBox1_Click(object sender, EventArgs e)
+        {
+
+        }
+
+        private void Form1_Load(object sender, EventArgs e)
+        {
+            this.FormBorderStyle = FormBorderStyle.FixedSingle;
+            try
+            {
+                mysqlbaglan.Open(); //oluşturtuğumuz tanımı çalıştırarak açılmasını sağlıyoruz
+                if (mysqlbaglan.State != ConnectionState.Closed) // tanımın durumunu kontrol ediyoruz bağlı mı değil mi
+                {
+                    MessageBox.Show("Bağlantı Başarılı Bir Şekilde Gerçekleşti");  //bağlı ise buradaki işlemler gerçekleşiyor
+                }
+                else
+                {
+                     MessageBox.Show("Maalesef Bağlantı Yapılamadı...!"); // bağlı değilse buradaki işlemler gerçekleşiyor
+                }
+            }
+            catch (Exception err)
+            {
+                MessageBox.Show("Hata! " + err.Message, "Hata Oluştu", MessageBoxButtons.OK, MessageBoxIcon.Error);
+            }
+
+        }
+
+        private void label7_MouseHover(object sender, EventArgs e)
+        {
+            arsa_kayit.ForeColor = Color.DarkOrange;
+            arsa_kayit.Cursor = Cursors.Hand;
+        }
+
+        private void arsa_kayit_MouseLeave(object sender, EventArgs e)
+        {
+            arsa_kayit.ForeColor = Color.White;
+            
+        }
+
+        private void ev_kayit_MouseHover(object sender, EventArgs e)
+        {
+            ev_kayit.ForeColor = Color.DarkOrange;
+            ev_kayit.Cursor = Cursors.Hand;
+        }
+
+        private void ev_kayit_MouseLeave(object sender, EventArgs e)
+        {
+            ev_kayit.ForeColor = Color.White;
+        }
+
+        private void isyeri_kayit_MouseHover(object sender, EventArgs e)
+        {
+            isyeri_kayit.ForeColor = Color.DarkOrange;
+            isyeri_kayit.Cursor = Cursors.Hand;
+        }
+
+        private void isyeri_kayit_MouseLeave(object sender, EventArgs e)
+        {
+            isyeri_kayit.ForeColor = Color.White;
+        }
+
+        private void musteri_kayit_MouseHover(object sender, EventArgs e)
+        {
+            musteri_kayit.ForeColor = Color.DarkOrange;
+            musteri_kayit.Cursor = Cursors.Hand;
+        }
+
+        private void musteri_kayit_MouseLeave(object sender, EventArgs e)
+        {
+            musteri_kayit.ForeColor = Color.White;
+        }
+
+        private void label9_MouseHover(object sender, EventArgs e)
+        {
+            label9.ForeColor = Color.DarkOrange;
+            label9.Cursor = Cursors.Hand;
+        }
+
+        private void label9_MouseLeave(object sender, EventArgs e)
+        {
+            label9.ForeColor = Color.White;
+        }
+
+        
+
+        private void arsa_kayit_Click(object sender, EventArgs e)
+        {
+
+            kontrol.Text = "Lütfen Giriş Yapınız !";
+            secenek = "arsa";
+        }
+
+        private void isyeri_kayit_Click(object sender, EventArgs e)
+        {
+
+            kontrol.Text = "Lütfen Giriş Yapınız !";
+            secenek = "isyeri";
+        }
+
+        private void musteri_kayit_Click(object sender, EventArgs e)
+        {
+
+            kontrol.Text = "Lütfen Giriş Yapınız !";
+            secenek = "musteri";
+        }
+
+        private void label9_Click(object sender, EventArgs e)
+        {
+
+            kontrol.Text = "Lütfen Giriş Yapınız !";
+            secenek = "mulk";
+        }
+
+        private void button2_Click(object sender, EventArgs e)
+        {
+            personelkayit personel_kayit = new personelkayit();
+            personel_kayit.Show();
+
+        }
+
+        private void ev_kayit_Click(object sender, EventArgs e)
+        {
+            personel_adi = personel_ad.Text;
+            kontrol.Text = "Lütfen Giriş Yapınız !";
+            secenek = "ev";
+        }
+
+        private void button1_Click(object sender, EventArgs e)
+        {
+            MySqlCommand komut = new MySqlCommand("SELECT*FROM personel", mysqlbaglan);
+            MySqlDataReader oku = komut.ExecuteReader();
+            personel_adi = personel_ad.Text;
+            sifre = personel_sifre.Text;
+            while (oku.Read())
+            {
+                if (oku["personel_ad"].ToString() == personel_adi && oku["personel_sifre"].ToString() == sifre)
+                {
+                    if (secenek == "ev")
+                    {
+                        evkayit ev_kayit = new evkayit();
+                        ev_kayit.Show();
+                        this.Hide();
+                       break;
+                    }
+                    else if(secenek == "mulk")
+                    {
+                        mulksorgu mulk_sorgu = new mulksorgu();
+                        mulk_sorgu.Show();
+                        this.Hide();
+                       break;
+                    }
+                    else if (secenek == "musteri")
+                    {
+                        musteri musteri_kayit = new musteri();
+                        musteri_kayit.Show();
+                        this.Hide();
+                       break;
+                    }
+                    else if (secenek == "isyeri")
+                    {
+                        isyerikayit isyeri_kayit = new isyerikayit();
+                        isyeri_kayit.Show();
+                        this.Hide();
+                      break;
+                    }
+                    else if (secenek == "arsa")
+                    {
+                        musterisec arsa_kayit = new musterisec();
+                        arsa_kayit.Show();
+                        this.Hide();
+                        break;
+                    }
+                    else if (secenek == "")
+                    {
+                        islem islem_sayfa = new islem();
+                        islem_sayfa.Show();
+                        this.Hide();
+                        break;
+                    }
+                  
+                }
+                
+            }
+            oku.Close();
+        }
+    }
+}
+
+--guncelleme_islemi.cs(Perosnel Listeliyor)--
+
+using System;
+using System.Collections.Generic;
+using System.ComponentModel;
+using System.Data;
+using System.Drawing;
+using System.Linq;
+using System.Text;
+using System.Threading.Tasks;
+using System.Windows.Forms;
+using MySql.Data;
+using MySql.Data.MySqlClient;
+namespace emlak_otomasyonu
+{
+    public partial class guncelle_islemi : Form
+    {
+        string ad, soyad, eposta;
+        public MySqlConnection mysqlbaglan = new MySqlConnection("Server='';Database=emlak_sistemi;Uid=yeni;Pwd=123;Port=3306");
+        public guncelle_islemi()
+        {
+            InitializeComponent();
+        }
+
+        private void guncelle_islemi_Load(object sender, EventArgs e)
+        {
+            try
+            {
+                mysqlbaglan.Open(); //oluşturtuğumuz tanımı çalıştırarak açılmasını sağlıyoruz
+                if (mysqlbaglan.State != ConnectionState.Closed) // tanımın durumunu kontrol ediyoruz bağlı mı değil mi
+                {
+                    //MessageBox.Show("Bağlantı Başarılı Bir Şekilde Gerçekleşti");  bağlı ise buradaki işlemler gerçekleşiyor
+                }
+                else
+                {
+                    // MessageBox.Show("Maalesef Bağlantı Yapılamadı...!"); // bağlı değilse buradaki işlemler gerçekleşiyor
+                }
+            }
+            catch (Exception err)
+            {
+                MessageBox.Show("Hata! " + err.Message, "Hata Oluştu", MessageBoxButtons.OK, MessageBoxIcon.Error);
+            }
+
+            MySqlDataAdapter listele = new MySqlDataAdapter("select * from personel", mysqlbaglan);
+            DataTable oku = new DataTable();
+            listele.Fill(oku);
+            dataGridView1.DataSource = oku;
+            dataGridView1.Columns[0].HeaderText = "ID";
+            dataGridView1.Columns[1].HeaderText = "Personel Ad";
+            dataGridView1.Columns[2].HeaderText = "Perosnel Soyad";
+            dataGridView1.Columns[3].HeaderText = "Perosnel E-posta";
+            dataGridView1.Columns[4].HeaderText = "Perosnel Tel";
+            dataGridView1.Columns[5].HeaderText = "Perosnel Şifre";
+        }
+
+        private void comboBox1_SelectedIndexChanged(object sender, EventArgs e)
+        {
+            if(comboBox1.SelectedIndex==0)
+            {
+                txteposta.Enabled = false;
+                txtsoyad.Enabled = false;
+                txtad.Enabled = true;
+                button1.Enabled = true;
+                lbleposta.Enabled = false;
+                lblad.Enabled = true;
+                lblsoyad.Enabled = false;
+            }
+            else if(comboBox1.SelectedIndex==1)
+            {
+                txtad.Enabled = false;
+                txteposta.Enabled = false;
+                txtsoyad.Enabled = true;
+                button1.Enabled = true;
+                lbleposta.Enabled = false;
+                lblad.Enabled = false;
+                lblsoyad.Enabled = true;
+            }
+            else if (comboBox1.SelectedIndex==2)
+            {
+                txtad.Enabled = true;
+                txtsoyad.Enabled = true;
+                txteposta.Enabled = false;
+                button1.Enabled = true;
+                lbleposta.Enabled = false;
+                lblad.Enabled = true;
+                lblsoyad.Enabled = true;
+            }
+            else if (comboBox1.SelectedIndex==3)
+            {
+                lbleposta.Enabled = true;
+                lblad.Enabled = false;
+                lblsoyad.Enabled = false;
+                txteposta.Enabled = true;
+                txtsoyad.Enabled = false;
+                txtad.Enabled = false;
+                button1.Enabled = true;
+            }
+
+ }
+
+        private void button1_Click(object sender, EventArgs e)
+        {
+            if (comboBox1.SelectedIndex==0)
+            {
+                ad = txtad.Text;
+                MySqlDataAdapter kayit_listele = new MySqlDataAdapter("select * from personel where personel_ad='"+ad+"'", mysqlbaglan);
+                DataTable oku = new DataTable();
+                kayit_listele.Fill(oku);
+                dataGridView1.DataSource = oku;
+            }
+            else if (comboBox1.SelectedIndex == 1)
+            {
+                soyad = txtsoyad.Text;
+                MySqlDataAdapter kayit_listele = new MySqlDataAdapter("select * from personel where personel_soyad='" + soyad+ "'", mysqlbaglan);
+                DataTable oku = new DataTable();
+                kayit_listele.Fill(oku);
+                dataGridView1.DataSource = oku;
+            }
+            else if (comboBox1.SelectedIndex == 2)
+            {
+                ad = txtad.Text;
+                soyad = txtsoyad.Text;
+                MySqlDataAdapter kayit_listele = new MySqlDataAdapter("select * from personel where personel_soyad='" + soyad + "' and personel_ad='"+ad+"' ", mysqlbaglan);
+                DataTable oku = new DataTable();
+                kayit_listele.Fill(oku);
+                dataGridView1.DataSource = oku;
+            }
+            else if (comboBox1.SelectedIndex == 3)
+            {
+                eposta = txteposta.Text;
+                MySqlDataAdapter kayit_listele = new MySqlDataAdapter("select * from personel where personel_eposta='" + eposta+ "'", mysqlbaglan);
+                DataTable oku = new DataTable();
+                kayit_listele.Fill(oku);
+                dataGridView1.DataSource = oku;
+            }
+            else if (comboBox1.SelectedIndex == 4)
+            {
+                MySqlDataAdapter listele = new MySqlDataAdapter("select * from personel", mysqlbaglan);
+                DataTable oku = new DataTable();
+                listele.Fill(oku);
+                dataGridView1.DataSource = oku;
+            }
+
+        }
+    }
+}
+
+--islem.cs--
+
+using System;
+using System.Collections.Generic;
+using System.ComponentModel;
+using System.Data;
+using System.Drawing;
+using System.Linq;
+using System.Text;
+using System.Threading.Tasks;
+using System.Windows.Forms;
+
+namespace emlak_otomasyonu
+{
+    public partial class islem : Form
+    {
+        evkayit ev_kayit1 = new evkayit();
+        mulksorgu mulk_sorgu1 = new mulksorgu();
+        musteri musteri_kayit1 = new musteri();
+        isyerikayit isyeri_kayit1 = new isyerikayit();
+        musterisec arsa_kayit1 = new musterisec();
+        public islem()
+        {
+            InitializeComponent();
+        }
+
+
+        private void islem_Load(object sender, EventArgs e)
+        {
+            //kullanici_adi.Text = kullaniciadi;
+            this.FormBorderStyle = FormBorderStyle.FixedSingle;
+        }
+
+        private void label4_Click(object sender, EventArgs e)
+        {
+
+        }
+
+        private void ev_kayit_Click(object sender, EventArgs e)
+        {
+            ev_kayit1.Show();
+            this.Close();
+        }
+
+        private void isyeri_kayit_Click(object sender, EventArgs e)
+        {
+            isyeri_kayit1.Show();
+            this.Close();
+        }
+
+        private void arsa_kayit_Click(object sender, EventArgs e)
+        {
+            arsa_kayit1.Show();
+            this.Close();
+        }
+
+        private void musteri_kayit_Click(object sender, EventArgs e)
+        {
+            musteri_kayit1.Show();
+            this.Close();
+        }
+
+        private void mulk_sorgu_Click(object sender, EventArgs e)
+        {
+            mulk_sorgu1.Show();
+            this.Close();
+        }
+    }
+}
+
+--isyeri_kayit_listele.cs--
+
+using System;
+using System.Collections.Generic;
+using System.ComponentModel;
+using System.Data;
+using System.Drawing;
+using System.Linq;
+using System.Text;
+using System.Threading.Tasks;
+using System.Windows.Forms;
+using MySql.Data;
+using MySql.Data.MySqlClient;
+namespace emlak_otomasyonu
+{
+    public partial class isyeri_kayit_listele : Form
+    {
+        string krediye_uygunluk, il, ilce, cadde, mahalle,satis_turu;
+        int fiyat, saticino;
+        public MySqlConnection mysqlbaglan = new MySqlConnection("Server='';Database=emlak_sistemi;Uid=yeni;Pwd=123;Port=3306");
+        public isyeri_kayit_listele()
+        {
+            InitializeComponent();
+        }
+
+        private void ARA_Click(object sender, EventArgs e)
+        {
+            silme_islemi musteri_listele = new silme_islemi();
+            musteri_listele.Show();
+        }
+
+        private void isyeri_kayit_listele_Load(object sender, EventArgs e)
+        {
+            try
+            {
+                mysqlbaglan.Open(); //oluşturtuğumuz tanımı çalıştırarak açılmasını sağlıyoruz
+                if (mysqlbaglan.State != ConnectionState.Closed) // tanımın durumunu kontrol ediyoruz bağlı mı değil mi
+                {
+                    //MessageBox.Show("Bağlantı Başarılı Bir Şekilde Gerçekleşti");  bağlı ise buradaki işlemler gerçekleşiyor
+                }
+                else
+                {
+                    // MessageBox.Show("Maalesef Bağlantı Yapılamadı...!"); // bağlı değilse buradaki işlemler gerçekleşiyor
+                }
+            }
+            catch (Exception err)
+            {
+                MessageBox.Show("Hata! " + err.Message, "Hata Oluştu", MessageBoxButtons.OK, MessageBoxIcon.Error);
+            }
+            MySqlDataAdapter listele = new MySqlDataAdapter("select * from isyeri_ozellikler", mysqlbaglan);
+            DataTable oku = new DataTable();
+            listele.Fill(oku);
+            dataGridView1.DataSource = oku;
+        }
+
+        private void button1_Click(object sender, EventArgs e)
+        {
+            krediye_uygunluk = txtkredi.Text;
+            fiyat = Convert.ToInt32(txtfiyat.Text);
+            saticino = Convert.ToInt32(txtsaticino.Text);
+            il = txtil.Text;
+            ilce = txtilce.Text;
+            cadde = txtcadde.Text;
+            mahalle = txtmahalle.Text;
+            satis_turu = satistur.Text;
+            MySqlDataAdapter listele3 = new MySqlDataAdapter("select * from isyeri_ozellikler where krediye_uygunluk='" + krediye_uygunluk + "' and fiyat=" + fiyat + " and musteriID="+saticino+"  and satis_turu_ID=(select satis_turu_ID from satis_turu where satis_turu_ad='"+satis_turu+"') and isyeri_adres_ID=(select isyeri_adres_ID from isyeri_adres where il='" + il + "' and ilce='" + ilce + "' and cadde='" + cadde + "' and mahalle='"+mahalle+"')", mysqlbaglan);
+            DataTable oku = new DataTable();
+            listele3.Fill(oku);
+            dataGridView1.DataSource = oku;
+        }
+    }
+}
+
+--isyerikayit.cs--
+
+using System;
+using System.Collections.Generic;
+using System.ComponentModel;
+using System.Data;
+using System.Drawing;
+using System.Linq;
+using System.Text;
+using System.Threading.Tasks;
+using System.Windows.Forms;
+using MySql.Data;
+using MySql.Data.MySqlClient;
+namespace emlak_otomasyonu
+{
+    public partial class isyerikayit : Form
+    {
+        string kredi_uygun, devren, aciklama, satis_turu_id,isinma,il,ilce,cadde,mahalle;
+        int fiyat, bina_kat_sayisi, bulundugu_kat, satis_turu, saticino,adresid,sil_id,guncelle_id;
+        public MySqlConnection mysqlbaglan = new MySqlConnection("Server='';Database=emlak_sistemi;Uid=yeni;Pwd=123;Port=3306");
+        private void rdkredi1_CheckedChanged(object sender, EventArgs e)
+        {
+            kredi_uygun = rdkredi1.Text;
+        }
+
+        private void musteri_listele_Click(object sender, EventArgs e)
+        {
+            silme_islemi musteri_sorgu = new silme_islemi();
+            musteri_sorgu.Show();
+        }
+
+        private void label27_Click(object sender, EventArgs e)
+        {
+            kayit_id.Enabled= true;
+            araid.Enabled = true;
+            kontrol.Visible = true;
+            MessageBox.Show("Kayıdı silenecek müşterinin sadece ıd sini giriniz.");
+           
+        }
+
+        private void label26_Click(object sender, EventArgs e)
+        {
+            kayit_id.Enabled = true;
+            araid.Enabled = true;
+            kontrol.Visible = true;
+            MessageBox.Show("Kayıdı güncellenecek müşterinin sadece ıd sini giriniz.");
+        }
+
+        private void isyeri_listele_Click(object sender, EventArgs e)
+        {
+            isyeri_kayit_listele liste = new isyeri_kayit_listele();
+            liste.Show();
+        }
+
+        private void cmbkat_sayisi_SelectedIndexChanged(object sender, EventArgs e)
+        {
+            bina_kat_sayisi =Convert.ToInt32(cmbkat_sayisi.Text);
+        }
+
+        private void rd_devren1_CheckedChanged(object sender, EventArgs e)
+        {
+            devren = rd_devren1.Text;
+        }
+
+        private void rd_devren2_CheckedChanged(object sender, EventArgs e)
+        {
+            devren = rd_devren2.Text;
+        }
+
+        private void rd_satis_tur1_CheckedChanged(object sender, EventArgs e)
+        {
+            satis_turu = 1;
+        }
+
+        private void rd_satis_tur_CheckedChanged(object sender, EventArgs e)
+        {
+            satis_turu = 2;
+        }
+
+        private void rdkredi2_CheckedChanged(object sender, EventArgs e)
+        {
+            kredi_uygun = rdkredi2.Text;
+        }
+
+      
+        public isyerikayit()
+        {
+            InitializeComponent();
+        }
+
+        private void isyerikayit_Load(object sender, EventArgs e)
+        {
+            this.FormBorderStyle = FormBorderStyle.FixedSingle;
+            try
+            {
+                mysqlbaglan.Open(); //oluşturtuğumuz tanımı çalıştırarak açılmasını sağlıyoruz
+                if (mysqlbaglan.State != ConnectionState.Closed) // tanımın durumunu kontrol ediyoruz bağlı mı değil mi
+                {
+                    MessageBox.Show("Bağlantı Başarılı Bir Şekilde Gerçekleşti"); // bağlı ise buradaki işlemler gerçekleşiyor
+                }
+                else
+                {
+                    MessageBox.Show("Maalesef Bağlantı Yapılamadı...!"); // bağlı değilse buradaki işlemler gerçekleşiyor
+                }
+            }
+            catch (Exception err)
+            {
+                MessageBox.Show("Hata! " + err.Message, "Hata Oluştu", MessageBoxButtons.OK, MessageBoxIcon.Error);
+            }
+        }
+
+        private void pictureBox6_Click(object sender, EventArgs e)
+        {
+            Form1 frm1 = new Form1();
+            this.Hide();
+            frm1.Show();
+        }
+
+        private void pictureBox5_Click(object sender, EventArgs e)
+        {
+            sil_id =  Convert.ToInt32(kayit_id.Text);
+            MySqlCommand kayitsil = new MySqlCommand("DELETE FROM isyeri_ozellikler where isyeri_ozellik_ID=" + sil_id + " ", mysqlbaglan);
+            kayitsil.ExecuteNonQuery();
+            MySqlCommand kayitsil2 = new MySqlCommand("DELETE FROM isyeri_adres where isyeri_adres_ID=" + sil_id + " ", mysqlbaglan);
+            kayitsil2.ExecuteNonQuery();
+            kontrol.Text = "Silme işlemi başarı ile gerçekleştirildi";
+        }
+
+        private void pictureBox4_Click(object sender, EventArgs e)
+        {
+            guncelle_id = Convert.ToInt32(kayit_id.Text);
+            bulundugu_kat = Convert.ToInt32(txtbulunan_kat.Text);
+            isinma = isitma.Text;
+            saticino = Convert.ToInt32(txtsaticino.Text);
+            il = txtil.Text;
+            ilce = txtilce.Text;
+            cadde = txtcadde.Text;
+            mahalle = txtmahalle.Text;
+            fiyat = Convert.ToInt32(txtfiyat.Text);
+            aciklama = txtaciklama.Text;
+            MySqlCommand kayit_guncelle = new MySqlCommand("update isyeri_ozellikler set fiyat="+fiyat+",krediye_uygunluk='"+kredi_uygun+"',bina_kat_sayisi="+bina_kat_sayisi+",isitma='"+isinma+"',bulundugu_kat="+bulundugu_kat+",devren='"+devren+"',musteriID="+saticino+",aciklama='"+aciklama+"', satis_turu_ID="+satis_turu+" where isyeri_ozellik_ID="+guncelle_id+" ",mysqlbaglan);
+            kayit_guncelle.ExecuteNonQuery();
+            MySqlCommand kayit_guncelle2 = new MySqlCommand("update isyeri_adres set il='"+il+"',ilce='"+ilce+"',cadde='"+cadde+"',mahalle='"+mahalle+"' where isyeri_adres_ID="+guncelle_id+"",mysqlbaglan);
+            kayit_guncelle2.ExecuteNonQuery();
+            kontrol.Text = "Güncelleştirme işlemi başarı ile gerçekleştirildi";
+
+
+        }
+
+        private void pictureBox3_Click(object sender, EventArgs e)
+        {
+            bulundugu_kat = Convert.ToInt32(txtbulunan_kat.Text);
+            isinma = isitma.Text;
+            saticino = Convert.ToInt32(txtsaticino.Text);
+            il = txtil.Text;
+            ilce = txtilce.Text;
+            cadde = txtcadde.Text;
+            mahalle = txtmahalle.Text;
+            fiyat = Convert.ToInt32(txtfiyat.Text);
+            aciklama = txtaciklama.Text;
+            MySqlCommand kayit_ekle = new MySqlCommand("insert into isyeri_adres(il,ilce,cadde,mahalle) values('"+il+"','"+ilce+"','"+cadde+"','"+mahalle+"')",mysqlbaglan);
+            kayit_ekle.ExecuteNonQuery();
+            MySqlCommand komut2 = new MySqlCommand("SELECT * from isyeri_adres where isyeri_adres_ID =(select max(isyeri_adres_ID) from isyeri_adres )", mysqlbaglan);
+            MySqlDataReader oku2 = komut2.ExecuteReader();
+            while (oku2.Read())
+            {
+                adresid = Convert.ToInt32(oku2["isyeri_adres_ID"].ToString());
+            }
+            oku2.Close();
+            MySqlCommand komut3 = new MySqlCommand("insert into isyeri_ozellikler(fiyat,krediye_uygunluk,bina_kat_sayisi,isitma,bulundugu_kat,devren,isyeri_adres_ID,musteriID,aciklama,satis_turu_ID) values("+fiyat+",'"+kredi_uygun+"',"+bina_kat_sayisi+",'"+isinma+"',"+bulundugu_kat+",'"+devren+"',"+adresid+","+saticino+",'"+aciklama+"',"+satis_turu+")",mysqlbaglan);
+            komut3.ExecuteNonQuery();
+        }
+    }
+}
+
+--konut_listele.cs--
+
+using System;
+using System.Collections.Generic;
+using System.ComponentModel;
+using System.Data;
+using System.Drawing;
+using System.Linq;
+using System.Text;
+using System.Threading.Tasks;
+using System.Windows.Forms;
+using MySql.Data;
+using MySql.Data.MySqlClient;
+namespace emlak_otomasyonu
+{
+    public partial class konut_listele : Form
+    {
+        public MySqlConnection mysqlbaglan = new MySqlConnection("Server='';Database=emlak_sistemi;Uid=yeni;Pwd=123;Port=3306");
+        string satis_tur, oda_sayisi, metrekare, apartman_adi, il, ilce, cadde, mahalle, binano;
+        int fiyat, daireno;
+        private void listele_Click(object sender, EventArgs e)
+        {
+            fiyat = Convert.ToInt32(txtfiyat.Text);
+            metrekare = txtmetrekare.Text;
+            apartman_adi = txtapartman_adi.Text;
+            il = txt_il.Text;
+            ilce = txt_ilce.Text;
+            cadde = txt_cadde.Text;
+            mahalle = txt_mahalle.Text;
+            binano = txt_binano.Text;
+            daireno =Convert.ToInt32( txt_daireno.Text);
+            MySqlDataAdapter listele = new MySqlDataAdapter("select *from konut_ozellikler where konut_fiyat="+fiyat+" and metrekare='"+metrekare+"' and oda_sayisi="+oda_sayisi+" and konut_adres_ID=(select konut_adres_ID from konut_adresler where konut_adlari_ID =(select konut_adlari_ID from konut_adlari where apartman_adi='"+apartman_adi+"' and bina_no='"+binano+ "' and daire_no=" + daireno + ") and konut_konum_ID=(select konut_konum_ID from konutlar_konum where il_adi='" + il+"' and ilce_adi='"+ilce+"' and cadde_adi='"+cadde+"' and mahalle_adi='"+mahalle+"')  ) and satis_turu_ID=(select satis_turu_ID from satis_turu where satis_turu_ad='"+satis_tur+"')", mysqlbaglan);
+            DataTable oku = new DataTable();
+            listele.Fill(oku);
+            dataGridView1.DataSource = oku;
+        }
+
+       
+        public konut_listele()
+        {
+            InitializeComponent();
+        }
+        
+        private void konut_listele_Load(object sender, EventArgs e)
+        {
+            try
+            {
+                mysqlbaglan.Open(); //oluşturtuğumuz tanımı çalıştırarak açılmasını sağlıyoruz
+                if (mysqlbaglan.State != ConnectionState.Closed) // tanımın durumunu kontrol ediyoruz bağlı mı değil mi
+                {
+                    MessageBox.Show("Bağlantı Başarılı Bir Şekilde Gerçekleşti"); // bağlı ise buradaki işlemler gerçekleşiyor
+                }
+                else
+                {
+                    MessageBox.Show("Maalesef Bağlantı Yapılamadı...!"); // bağlı değilse buradaki işlemler gerçekleşiyor
+                }
+            }
+            catch (Exception err)
+            {
+                MessageBox.Show("Hata! " + err.Message, "Hata Oluştu", MessageBoxButtons.OK, MessageBoxIcon.Error);
+            }
+            MySqlDataAdapter listele = new MySqlDataAdapter("select *from konut_ozellikler", mysqlbaglan);
+            DataTable oku = new DataTable();
+            listele.Fill(oku);
+            dataGridView1.DataSource = oku;
+        }
+
+        private void cmb_satis_tur_SelectedIndexChanged(object sender, EventArgs e)
+        {
+            satis_tur = cmb_satis_tur.Text;
+        }
+
+        private void cmb_oda_sayisi_SelectedIndexChanged(object sender, EventArgs e)
+        {
+            oda_sayisi = cmb_oda_sayisi.Text;
+        }
+    }
+}
+
+--mulksorgu.cs--
+using System;
+using System.Collections.Generic;
+using System.ComponentModel;
+using System.Data;
+using System.Drawing;
+using System.Linq;
+using System.Text;
+using System.Threading.Tasks;
+using System.Windows.Forms;
+using MySql.Data;
+using MySql.Data.MySqlClient;
+namespace emlak_otomasyonu
+{
+    public partial class mulksorgu : Form
+    {
+        string sorgu_secim="KONUT",kredi_uygun,metrekare,satis_tur,emlak_tipi,il,ilce,odasayisi;
+        string imar_durum, arsa_metrekare, tapu_durum,arsa_kredi_uygun,arsa_il,arsa_ilce;
+        string isyeri_kredi,isyeri_devren,isyeri_satis_tur,isyeri_il,isyeri_ilce,isyeri_cadde,isyeri_isinma;
+        int isyeri_fiyat_min, isyeri_fiyat_max, isyeri_kat;
+        int arsa_kat_karsilik,arsa_fiyat_min,arsa_kaks, arsa_fiyat_max;
+        int bulunan_kat,konut_fiyati_min,binan_yasi, konut_fiyati_max;
+        public MySqlConnection mysqlbaglan = new MySqlConnection("Server='';Database=emlak_sistemi;Uid=yeni;Pwd=123;Port=3306");
+        public mulksorgu()
+        {
+            InitializeComponent();
+        }
+        private void mulksorgu_Load(object sender, EventArgs e)
+        {
+            this.FormBorderStyle = FormBorderStyle.FixedSingle;
+            try
+            {
+                mysqlbaglan.Open(); //oluşturtuğumuz tanımı çalıştırarak açılmasını sağlıyoruz
+                if (mysqlbaglan.State != ConnectionState.Closed) // tanımın durumunu kontrol ediyoruz bağlı mı değil mi
+                {
+                    MessageBox.Show("Bağlantı Başarılı Bir Şekilde Gerçekleşti"); // bağlı ise buradaki işlemler gerçekleşiyor
+                }
+                else
+                {
+                    MessageBox.Show("Maalesef Bağlantı Yapılamadı...!"); // bağlı değilse buradaki işlemler gerçekleşiyor
+                }
+            }
+            catch (Exception err)
+            {
+                MessageBox.Show("Hata! " + err.Message, "Hata Oluştu", MessageBoxButtons.OK, MessageBoxIcon.Error);
+            }
+        }
+
+        private void arsa_chk_CheckedChanged(object sender, EventArgs e)
+        {
+           if(rdarsa.Checked == true)
+            {
+                groupBox1.Text = "Arsa Arama Kriterleri";
+               // dataGridView1.ColumnCount = 13;
+                krediye_uygunluk.Text = "İmar Durumu :";
+                oda_sayisi.Text = "Tapu Durumu :";
+                rdsatistur2 .Text= "Uygun";
+                rdsatistur1.Text = "Uygun Değil";
+                satis_turu.Text = "Krediye Uygunluk :";
+                bulundugu_kat.Text = "Kat Karşılığı :";
+                konut_fiyat.Text = "Arsa Fiyat :";
+                bina_yasi.Text = "Kaks";
+                emlak_tip.Visible =false;
+                txtemlaktipi.Visible = false;
+                merekare.Visible = true;
+                txtmetrekare.Visible = true;
+                merekare.Text = "Metrekare :";
+                
+
+           
+                
+            }
+            sorgu_secim = rdarsa.Text;
+        }
+
+        private void isyerichk_CheckedChanged(object sender, EventArgs e)
+        {
+            if (rdisyeri.Checked == true)
+            {
+                groupBox1.Text = "İşyeri Arama Kriterleri";
+                //dataGridView1.ColumnCount = 12;
+                emlak_tip.Visible = true;
+                txtemlaktipi.Visible = true;
+                oda_sayisi.Text = "Devren Mi :";
+                konut_fiyat.Text = "İşyeri Fiyat :";
+                emlak_tip.Text = "Isınma :";
+                rdsatistur2.Text = "SATILIK";
+                rdsatistur1.Text = "KİRALIK";
+                satis_turu.Text = "Satış Türü :";
+                bina_yasi.Text = "Cadde :";
+                bulundugu_kat.Text = "Bulunduğu Kat :";
+                krediye_uygunluk.Text = "Krediye Uygunluk :";
+                merekare.Visible = false;
+                txtmetrekare.Visible = false;
+
+            }
+            sorgu_secim = rdisyeri.Text;
+        }
+
+        private void konutchk_CheckedChanged(object sender, EventArgs e)
+        {
+            if (rdkonut.Checked)
+            {
+                merekare.Visible = true;
+                txtmetrekare.Visible = true;
+                groupBox1.Text = "Konut Arama Kriterleri";
+                emlak_tip.Visible = true;
+                txtemlaktipi.Visible = true;
+                //dataGridView1.ColumnCount = 21;
+                krediye_uygunluk.Text = "Krediye Uygunluk :";
+                merekare.Text = "Metrekare :";
+                oda_sayisi.Text = "Oda Sayısı :";
+                bulundugu_kat.Text = "Bulunduğu Kat :";
+                konut_fiyat.Text = "Konut Fiyat :";
+                satis_turu.Text = "Satış Türü :";
+                bina_yasi.Text = "Bina Yaşı:";
+                il_lbl.Text = "İl :";
+                ilcee_lbl.Text = "İlçe :";
+                emlak_tip.Text = "Emlak Tipi :";
+                rdsatistur2.Text = "SATILIK";
+                rdsatistur1.Text = "KİRALIK";
+
+            }
+
+            sorgu_secim = rdkonut.Text;
+
+        }
+
+        private void mulksorgu_FormClosing(object sender, FormClosingEventArgs e)
+        {
+          
+            DialogResult dr= MessageBox.Show("Çıkmak İstediğinizden Emin misiniz","UYARI",MessageBoxButtons.YesNo,MessageBoxIcon.Warning);
+            if (dr == DialogResult.Yes) {
+                e.Cancel = false;
+                
+            }
+            else
+            {
+                e.Cancel = true;
+            }
+
+        }
+
+        private void pictureBox6_Click(object sender, EventArgs e)
+        {
+            Form1 frm1 = new Form1();
+            this.Hide();
+            frm1.Show();
+        }
+
+        private void button1_Click(object sender, EventArgs e)
+        {
+            satin_alma satin_almasi = new satin_alma();
+            satin_almasi.Show();
+        }
+
+        private void rdsatistur2_CheckedChanged(object sender, EventArgs e)
+        {
+            if (rdkonut.Checked)
+            {
+              satis_tur = rdsatistur2.Text;
+            }
+            if (rdarsa.Checked)
+            {
+                arsa_kredi_uygun = rdsatistur2.Text;
+            }
+            if (rdisyeri.Checked)
+            {
+                isyeri_satis_tur = rdsatistur2.Text;
+            }
+           
+        }
+
+        private void rdsatistur1_CheckedChanged(object sender, EventArgs e)
+        {
+            if (rdkonut.Checked)
+            {
+               satis_tur = rdsatistur1.Text;
+            }
+            if (rdarsa.Checked)
+            {
+                arsa_kredi_uygun = rdsatistur1.Text;
+            }
+            if (rdisyeri.Checked)
+            {
+                isyeri_satis_tur = rdsatistur1.Text;
+            }
+            
+        }
+
+        private void groupBox1_Enter(object sender, EventArgs e)
+        {
+
+        }
+
+        private void pictureBox3_Click(object sender, EventArgs e)
+        {
+           
+
+            if (sorgu_secim == "KONUT")
+            {
+                metrekare = txtmetrekare.Text;
+                odasayisi = txt_odasayisi.Text;
+                bulunan_kat = Convert.ToInt32(txtbulunan_kat.Text);
+                konut_fiyati_min = Convert.ToInt32(txtfiyat_min.Text);
+                konut_fiyati_max = Convert.ToInt32(txtfiyat_max.Text);
+                binan_yasi = Convert.ToInt32(txtbinayasi.Text);
+                il = txtil.Text;
+                ilce = txtilce.Text;
+                emlak_tipi = txtemlaktipi.Text;
+                MySqlDataAdapter listele = new MySqlDataAdapter("select o.konut_ozellik_ID ,o.konut_fiyat ,k.il_adi,k.ilce_adi,k.cadde_adi,k.mahalle_adi,a.apartman_adi,a.bina_no ,a.daire_no ,o.kreadiye_uygunluk, o.metrekare , o.oda_sayisi ,o.banyo_sayisi,o.bulundugu_kat,o.balkon_sayisi,o.isitma,o.konut_tipi,m.musteriID ,m.musteri_ad,m.musteri_tel from konut_ozellikler o ,musteri_bilgiler m,konutlar_konum k ,bina b,konut_adlari a where a.konut_adlari_ID =o.konut_adres_ID and k.konut_konum_ID=o.konut_adres_ID and o.musteriID=m.musteriID and o.satis_turu_ID=(select s.satis_turu_ID from satis_turu s where  s.satis_turu_ad='" + satis_tur+"') and o.konut_ozellik_ID IN (select konut_konum_ID from konutlar_konum where il_adi='" + il + "'and ilce_adi='" + ilce + "') and o.metrekare='"+metrekare+"'and o.bulundugu_kat=" + bulunan_kat + " and o.kreadiye_uygunluk='"+kredi_uygun+"' and o.bina_ID=b.bina_ID and o.oda_sayisi='" + odasayisi + "' and o.konut_tipi='"+emlak_tipi+"' and o.konut_fiyat >="+konut_fiyati_min+" and o.konut_fiyat<="+konut_fiyati_max+"", mysqlbaglan);
+                DataTable oku = new DataTable();
+                listele.Fill(oku);
+                dataGridView1.DataSource = oku;
+            }
+            else if (sorgu_secim == "ARSA")
+            {
+                arsa_metrekare = txtmetrekare.Text;
+                tapu_durum = txt_odasayisi.Text;
+                arsa_kat_karsilik = Convert.ToInt32(txtbulunan_kat.Text);
+                arsa_fiyat_min = Convert.ToInt32(txtfiyat_min.Text);
+                arsa_fiyat_max = Convert.ToInt32(txtfiyat_max.Text);
+                arsa_kaks = Convert.ToInt32(txtbinayasi.Text);
+                arsa_il = txtil.Text;
+                arsa_ilce = txtilce.Text;
+                MySqlDataAdapter listele2 = new MySqlDataAdapter("select a.arsa_ID ,a.imar_durum,a.tapu,a.fiyat,a.kreadiye_uygunluk,a.metrekare,a.adano,a.parselno,a.paftano,a.kat_karsiligi,a.kaks,d.il,d.ilce,d.acik_adres,m.musteriID ,m.musteri_ad,m.musteri_tel from arsa_ozellikler a ,arsa_adres d,musteri_bilgiler m where m.musteriID=a.musteriID and d.arsa_adres_ID=a.arsa_adres_ID and a.arsa_ID IN(select arsa_adres_ID from arsa_adres where il='"+arsa_il+"' and ilce='"+arsa_ilce+"') and kat_karsiligi="+arsa_kat_karsilik+" and tapu='"+tapu_durum+"' and metrekare='"+arsa_metrekare+"' and kaks="+arsa_kaks+" and fiyat >="+arsa_fiyat_min+" and fiyat <= "+arsa_fiyat_max+" and imar_durum='"+imar_durum+"' and kreadiye_uygunluk='"+arsa_kredi_uygun+"' ",mysqlbaglan);
+                DataTable oku2 = new DataTable();
+                listele2.Fill(oku2);
+                dataGridView1.DataSource = oku2;
+            }
+            else if (sorgu_secim=="İŞYERİ")
+            {
+                isyeri_devren = txt_odasayisi.Text;
+                isyeri_kat = Convert.ToInt32(txtbulunan_kat.Text);
+                isyeri_fiyat_max = Convert.ToInt32(txtfiyat_max.Text);
+                isyeri_fiyat_min = Convert.ToInt32(txtfiyat_min.Text);
+                isyeri_il = txtil.Text;
+                isyeri_ilce = txtilce.Text;
+                isyeri_cadde = txtbinayasi.Text;
+                isyeri_isinma = txtemlaktipi.Text;
+                MySqlDataAdapter listele3 = new MySqlDataAdapter("select s.isyeri_ozellik_ID,b.satis_turu_ad ,s.fiyat,s.krediye_uygunluk,s.bina_kat_sayisi,s.isitma,s.bulundugu_kat,s.devren,s.aciklama,m.musteriID,m.musteri_ad,m.musteri_tel,a.il,a.ilce,a.cadde,a.mahalle from isyeri_ozellikler s,musteri_bilgiler m ,isyeri_adres a ,satis_turu b where a.isyeri_adres_ID=s.isyeri_adres_ID and s.isyeri_ozellik_ID IN(select isyeri_adres_ID from isyeri_adres where il='"+isyeri_il+"' and ilce='"+isyeri_ilce+"' and cadde='"+isyeri_cadde+"') and  m.musteriID=s.musteriID and s.devren='"+isyeri_devren+"' and s.bulundugu_kat="+isyeri_kat+" and s.fiyat >="+isyeri_fiyat_min+" and s.fiyat<="+isyeri_fiyat_max+" and s.isitma='"+isyeri_isinma+"' and s.krediye_uygunluk='"+isyeri_kredi+"' and s.satis_turu_ID=b.satis_turu_ID and  s.satis_turu_ID=(select satis_turu_ID from satis_turu where satis_turu_ad='"+isyeri_satis_tur+"')",mysqlbaglan);
+                DataTable oku3 = new DataTable();
+                listele3.Fill(oku3);
+                dataGridView1.DataSource = oku3;
+
+            }
+        }
+
+        private void rdkredi1_CheckedChanged(object sender, EventArgs e)
+        {
+            if (rdkonut.Checked)
+            {
+             kredi_uygun = rdkredi1.Text;
+            }
+            
+            if (rdarsa.Checked == true)
+            {
+               imar_durum = rdkredi1.Text;
+            }
+            if (rdisyeri.Checked)
+            {
+                isyeri_kredi = rdkredi1.Text;
+            }
+            
+        }
+
+        private void rdkredi2_CheckedChanged(object sender, EventArgs e)
+        {
+            if (rdkonut.Checked)
+            {
+                kredi_uygun = rdkredi2.Text;
+            }
+           
+            if(rdarsa.Checked==true)
+            {
+                imar_durum = rdkredi2.Text;
+            }
+            if (rdisyeri.Checked)
+            {
+                isyeri_kredi = rdkredi2.Text;
+            }
+
+            
+        }
+    }
+}
+
+--musteri.cs--
+
+using System;
+using System.Collections.Generic;
+using System.ComponentModel;
+using System.Data;
+using System.Drawing;
+using System.Linq;
+using System.Text;
+using System.Threading.Tasks;
+using System.Windows.Forms;
+using MySql.Data;
+using MySql.Data.MySqlClient;
+namespace emlak_otomasyonu
+{
+    public partial class musteri : Form
+    {
+        string adi, soyadi, telno, epostasi, aciklamasi, emlak_turu;
+        int id_bilgi=0,musteri_idsi;
+        int index;
+        public MySqlConnection mysqlbaglan = new MySqlConnection("Server='';Database=emlak_sistemi;Uid=yeni;Pwd=123;Port=3306");
+        public musteri()
+        {
+            InitializeComponent();
+            adi = txtadi.Text;
+            soyadi = txtsoyad.Text;
+            telno = txttelno.Text;
+            epostasi = txteposta.Text;
+            aciklamasi = txtaciklama.Text;
+        }
+
+        private void sil_uyari_Click(object sender, EventArgs e)
+        {
+            MessageBox.Show("Kayıdı silenecek ise müşterinin sadece ıd sini giriniz.", "UYARI");
+            kayit_id.Visible = true;
+            idbn.Visible = true;
+            kontrol.Visible = true;
+        }
+
+        private void kaydet_Click(object sender, EventArgs e)
+        {
+            MySqlCommand kayit_ekle2;
+            adi = txtadi.Text;
+            soyadi = txtsoyad.Text;
+            telno = txttelno.Text.ToString();
+            epostasi = txteposta.Text;
+            aciklamasi = txtaciklama.Text;
+            emlak_turu = emlakturu.SelectedText.ToString();
+            index = emlakturu.SelectedIndex + 1;
+            if (adi!="" && soyadi!="" && telno!="" && epostasi!="" && aciklamasi!="" && emlak_turu != "")
+            {
+                if (emlak_turu == "Ev") {
+                 kayit_ekle2 = new MySqlCommand("insert into musteri_bilgiler(musteri_ad,musteri_soyad,musteri_tel,musteri_eposta,aciklama,emlak_turu_ID) values('"+adi+"','"+soyadi+"','"+telno+"','"+epostasi+"','"+aciklamasi+"',"+index+") ",mysqlbaglan);
+                 kayit_ekle2.ExecuteNonQuery();
+                }
+                else if (emlak_turu == "Arsa")
+                {
+                    kayit_ekle2 = new MySqlCommand("insert into musteri_bilgiler(musteri_ad,musteri_soyad,musteri_tel,musteri_eposta,aciklama,emlak_turu_ID) values('" + adi + "','" + soyadi + "','" + telno + "','" + epostasi + "','" + aciklamasi + "'," + index + ") ", mysqlbaglan);
+                    kayit_ekle2.ExecuteNonQuery();
+                }
+
+                else if (emlak_turu == "Isyeri")
+                {
+                 kayit_ekle2= new MySqlCommand("insert into musteri_bilgiler(musteri_ad,musteri_soyad,musteri_tel,musteri_eposta,aciklama,emlak_turu_ID) values('" + adi + "','" + soyadi + "','" + telno + "','" + epostasi + "','" + aciklamasi + "'," + index + ") ", mysqlbaglan);
+                 kayit_ekle2.ExecuteNonQuery();
+
+                }
+
+                
+            }
+
+        }
+
+        private void button1_Click(object sender, EventArgs e)
+        {
+            txtadi.Text="";
+            txtsoyad.Text="";
+            txttelno.Text="";
+             txteposta.Text="";
+             txtaciklama.Text="";
+            kayit_id.Text = "";
+            kontrol.Text = "";
+        }
+
+        private void emlakturu_SelectedIndexChanged(object sender, EventArgs e)
+        {
+            emlak_turu = emlakturu.Items[emlakturu.SelectedIndex].ToString();
+            MessageBox.Show(emlak_turu);
+        }
+
+        private void guncelle_uyari_Click(object sender, EventArgs e)
+        {
+            kayit_id.Visible = true;
+            idbn.Visible = true;
+            kontrol.Visible = true;
+            MessageBox.Show("Güncellenecek verinin ıd sini ve diğer bilgilerini giriniz.", "Uyarı", MessageBoxButtons.OKCancel, MessageBoxIcon.Information);
+        }
+
+        private void musteri_Load(object sender, EventArgs e)
+        {
+            this.FormBorderStyle = FormBorderStyle.FixedSingle;
+            kayit_id.Visible = false;
+            idbn.Visible = false;
+            kontrol.Visible = false;
+            try
+            {
+                mysqlbaglan.Open(); //oluşturtuğumuz tanımı çalıştırarak açılmasını sağlıyoruz
+                if (mysqlbaglan.State != ConnectionState.Closed) // tanımın durumunu kontrol ediyoruz bağlı mı değil mi
+                {
+                    MessageBox.Show("Bağlantı Başarılı Bir Şekilde Gerçekleşti"); // bağlı ise buradaki işlemler gerçekleşiyor
+                }
+                else
+                {
+                    MessageBox.Show("Maalesef Bağlantı Yapılamadı...!"); // bağlı değilse buradaki işlemler gerçekleşiyor
+                }
+            }
+            catch (Exception err)
+            {
+                MessageBox.Show("Hata! " + err.Message, "Hata Oluştu", MessageBoxButtons.OK, MessageBoxIcon.Error);
+            }
+            MySqlCommand komut2 = new MySqlCommand("SELECT*FROM emlak_turu", mysqlbaglan);
+            MySqlDataReader oku2 = komut2.ExecuteReader();
+            while (oku2.Read())
+            {
+                emlakturu.Items.Add(oku2["emlak_turu_ad"].ToString());
+            }
+            oku2.Close();
+
+        }
+
+        private void pictureBox6_Click(object sender, EventArgs e)
+        {
+            Form1 frm1 = new Form1();
+            this.Hide();
+            frm1.Show();
+        }
+
+        private void button3_Click(object sender, EventArgs e)
+        {
+            silme_islemi musteri_sorgula = new silme_islemi();
+            musteri_sorgula.Show();
+        }
+
+        private void pictureBox4_Click(object sender, EventArgs e)
+        {
+            id_bilgi = Convert.ToInt32(kayit_id.Text);
+            MySqlCommand kayit_sil = new MySqlCommand("DELETE FROM musteri_bilgiler WHERE musteriID= (" +id_bilgi + ")", mysqlbaglan);
+            kayit_sil.ExecuteNonQuery();
+            kontrol.Text = "Silme işlemi başarı ile gerçekleştirildi";
+
+        }
+
+        private void pictureBox7_Click(object sender, EventArgs e)
+        {
+            adi = txtadi.Text;
+            soyadi = txtsoyad.Text;
+            telno = txttelno.Text.ToString();
+            epostasi = txteposta.Text;
+            aciklamasi = txtaciklama.Text;
+            musteri_idsi = Convert.ToInt32(kayit_id.Text);
+            MessageBox.Show(emlak_turu);
+            MySqlCommand kayit_guncelle = new MySqlCommand("UPDATE musteri_bilgiler set musteri_ad='" + adi + "',musteri_soyad='" + soyadi + "',musteri_tel='" + telno + "',musteri_eposta='" + epostasi + "',aciklama='" + aciklamasi + "', emlak_turu_ID=(select e.emlak_turu_ID from emlak_turu e where e.emlak_turu_ad='" + emlak_turu+"') where musteriID="+musteri_idsi+"",mysqlbaglan);
+            kayit_guncelle.ExecuteNonQuery();
+            MessageBox.Show("Güncellemem İşlemi Başarılı");
+
+        }
+    }
+}
+
+--personelkayit.cs--
+
+using System;
+using System.Collections.Generic;
+using System.ComponentModel;
+using System.Data;
+using System.Drawing;
+using System.Linq;
+using System.Text;
+using System.Threading.Tasks;
+using System.Windows.Forms;
+using MySql.Data;
+using MySql.Data.MySqlClient;
+namespace emlak_otomasyonu
+{
+    public partial class personelkayit : Form
+    {
+        string ad, soyad, telno, eposta, sifre;
+        int personel_id;
+        public MySqlConnection mysqlbaglan = new MySqlConnection("Server='';Database=emlak_sistemi;Uid=yeni;Pwd=123;Port=3306");
+        public personelkayit()
+        {
+            InitializeComponent();
+           
+        }
+
+        private void kaydet_Click(object sender, EventArgs e)
+        {
+            ad = txtad.Text;
+            soyad = txtsoyad.Text;
+            telno = txttelno.Text;
+            eposta = txteposta.Text;
+            sifre = txtsifre.Text;
+            if (ad!="" && soyad!="" && telno!="" && eposta!="" && sifre != "")
+            {
+                MySqlCommand kayit_ekle = new MySqlCommand("insert into personel (personel_ad,personel_soyad,personel_eposta,personel_telno,personel_sifre) values ('" + ad + "','" + soyad + "','"+eposta +"','"+telno+"','"+sifre+"')", mysqlbaglan);
+                kayit_ekle.ExecuteNonQuery();
+                MessageBox.Show("Başarılı bir şekilde kaydedildi.");
+            }
+            else
+            {
+                MessageBox.Show("Boş alanları doldurunuz !!!");
+            }
+        }
+
+        private void button1_Click(object sender, EventArgs e)
+        {
+           txtad.Text="";
+           txtsoyad.Text="";
+           txttelno.Text="";
+           txteposta.Text="";
+           txtsifre.Text="";
+        }
+
+        private void button2_Click(object sender, EventArgs e)
+        {
+            guncelle_islemi liste = new guncelle_islemi();
+            liste.Show();
+            
+        }
+
+        private void label27_Click(object sender, EventArgs e)
+        {
+            MessageBox.Show("Kayıdı silenecek ise müşterinin sadece ıd sini giriniz.","UYARI");
+            kayit_id.Visible = true;
+            id.Visible = true;
+            kontrol.Visible = true;
+        }
+
+        private void label26_Click(object sender, EventArgs e)
+        {
+            MessageBox.Show("Kayıdı güncellenecek ise müşterinin ıd sini ve diğer bilgilerini giriniz.", "UYARI");
+            kayit_id.Visible = true;
+            id.Visible = true;
+            kontrol.Visible = true;
+        }
+
+        private void pictureBox6_Click(object sender, EventArgs e)
+        {
+            Form1 frm1 = new Form1();
+            this.Hide();
+            frm1.Show();
+        }
+
+        private void personelkayit_Load(object sender, EventArgs e)
+        {
+            this.FormBorderStyle = FormBorderStyle.FixedSingle;
+            try
+            {
+                mysqlbaglan.Open(); //oluşturtuğumuz tanımı çalıştırarak açılmasını sağlıyoruz
+                if (mysqlbaglan.State != ConnectionState.Closed) // tanımın durumunu kontrol ediyoruz bağlı mı değil mi
+                {
+                    MessageBox.Show("Bağlantı Başarılı Bir Şekilde Gerçekleşti"); // bağlı ise buradaki işlemler gerçekleşiyor
+                }
+                else
+                {
+                    MessageBox.Show("Maalesef Bağlantı Yapılamadı...!"); // bağlı değilse buradaki işlemler gerçekleşiyor
+                }
+            }
+            catch (Exception err)
+            {
+                MessageBox.Show("Hata! " + err.Message, "Hata Oluştu", MessageBoxButtons.OK, MessageBoxIcon.Error);
+            }
+        }
+
+        private void label6_Click(object sender, EventArgs e)
+        {
+            Form1 frm1 = new Form1();
+            this.Hide();
+            frm1.Show();
+        }
+
+        private void pictureBox4_Click(object sender, EventArgs e)
+        {
+            
+            
+            personel_id = Convert.ToInt32(kayit_id.Text);
+            MySqlCommand kayit_sil = new MySqlCommand("DELETE FROM personel WHERE personel_ID= (" + personel_id + ")", mysqlbaglan);
+            kayit_sil.ExecuteNonQuery();
+            kontrol.Text = "Silme işlemi başarı ile gerçekleştirildi";
+
+        }
+
+        private void pictureBox7_Click(object sender, EventArgs e)
+        {
+            ad = txtad.Text;
+            soyad = txtsoyad.Text;
+            telno = txttelno.Text;
+            eposta = txteposta.Text;
+            sifre = txtsifre.Text;
+            personel_id = Convert.ToInt32(kayit_id.Text);
+            MySqlCommand kayit_guncelle = new MySqlCommand("UPDATE personel set personel_ad='"+ad+"' ,personel_soyad='"+soyad+"',personel_eposta='"+eposta+"',personel_telno='"+telno+"',personel_sifre='"+sifre+"' WHERE personel_ID="+personel_id+" ",mysqlbaglan);
+            kayit_guncelle.ExecuteNonQuery();
+            MessageBox.Show("Güncellemem İşlemi Başarılı");
+        }
+    }
+}
+
+--satin_alma.cs--
+
+using System;
+using System.Collections.Generic;
+using System.ComponentModel;
+using System.Data;
+using System.Drawing;
+using System.Linq;
+using System.Text;
+using System.Threading.Tasks;
+using System.Windows.Forms;
+using MySql.Data;
+using MySql.Data.MySqlClient;
+namespace emlak_otomasyonu
+{
+    public partial class satin_alma : Form
+    {
+
+        public MySqlConnection mysqlbaglan = new MySqlConnection("Server='';Database=emlak_sistemi;Uid=yeni;Pwd=123;Port=3306");
+        int mulkid, aliciid, saticiid;
+        string kayit_tarih;
+        public satin_alma()
+        {
+            InitializeComponent();
+        }
+
+        private void label4_Click(object sender, EventArgs e)
+        {
+
+        }
+
+        private void satin_alma_Load(object sender, EventArgs e)
+        {
+            try
+            {
+                mysqlbaglan.Open(); //oluşturtuğumuz tanımı çalıştırarak açılmasını sağlıyoruz
+                if (mysqlbaglan.State != ConnectionState.Closed) // tanımın durumunu kontrol ediyoruz bağlı mı değil mi
+                {
+                    MessageBox.Show("Bağlantı Başarılı Bir Şekilde Gerçekleşti"); // bağlı ise buradaki işlemler gerçekleşiyor
+                }
+                else
+                {
+                    MessageBox.Show("Maalesef Bağlantı Yapılamadı...!"); // bağlı değilse buradaki işlemler gerçekleşiyor
+                }
+            }
+            catch (Exception err)
+            {
+                MessageBox.Show("Hata! " + err.Message, "Hata Oluştu", MessageBoxButtons.OK, MessageBoxIcon.Error);
+            }
+        }
+
+        private void button2_Click(object sender, EventArgs e)
+        {
+            silme_islemi musteri_listele = new silme_islemi();
+            musteri_listele.Show();
+        }
+
+        private void button1_Click(object sender, EventArgs e)
+        {
+            mulkid = Convert.ToInt32(txtmulkid.Text);
+            aliciid = Convert.ToInt32(txt_alici_musteri.Text);
+            saticiid = Convert.ToInt32(txtsatici_musteri.Text);
+            kayit_tarih = tarih.Text;
+            if (rdarsa.Checked)
+            {
+                MySqlCommand kayit_ekle = new MySqlCommand("insert into arsa_islemler(musteri_ID1,musteri_ID2,arsa_ID,arsa_satis_tarihi) values("+saticiid+","+aliciid+","+mulkid+",'"+kayit_tarih+"')",mysqlbaglan);
+                kayit_ekle.ExecuteNonQuery();
+                MySqlCommand arsa_ozellik_sil = new MySqlCommand("DELETE FROM arsa_ozellikler where  arsa_ID="+mulkid+"", mysqlbaglan);
+                arsa_ozellik_sil.ExecuteNonQuery();
+                MySqlCommand arsa_adres_sil = new MySqlCommand("DELETE FROM arsa_adres where arsa_adres_ID="+mulkid+"", mysqlbaglan);
+                arsa_adres_sil.ExecuteNonQuery();
+            }
+            if (rdisyeri.Checked)
+            {
+                MySqlCommand kayit_ekle2 = new MySqlCommand("insert into isyeri_islemler(musteri_ID1,musteri_ID2,isyeri_ozellik_ID,isyeri_satis_tarihi) values(" + saticiid + "," + aliciid + "," + mulkid + ",'" + kayit_tarih + "')", mysqlbaglan);
+                kayit_ekle2.ExecuteNonQuery();
+                MySqlCommand isyeri_ozellik_sil = new MySqlCommand("DELETE FROM isyeri_ozellikler where isyeri_ozellik_ID="+mulkid+"",mysqlbaglan);
+                isyeri_ozellik_sil.ExecuteNonQuery();
+                MySqlCommand isyeri_adres_sil = new MySqlCommand("DELETE FROM isyeri_adres where isyeri_adres_ID="+mulkid+" ", mysqlbaglan);
+                isyeri_adres_sil.ExecuteNonQuery();
+            }
+            if (rdkonut.Checked)
+            {
+                MySqlCommand kayit_ekle3 = new MySqlCommand("insert into konut_islemler(musteri_ID1,musteri_ID2,konut_ozellik_ID,konut_satis_tarihi) values("+saticiid+","+aliciid+","+mulkid+",'"+kayit_tarih+"')", mysqlbaglan);
+                kayit_ekle3.ExecuteNonQuery();
+                MySqlCommand konut_ozellik_sil = new MySqlCommand("DELETE FROM konut_ozellikler where konut_ozellik_ID="+mulkid+"",mysqlbaglan);
+                konut_ozellik_sil.ExecuteNonQuery();
+                MySqlCommand konut_adlari_sil = new MySqlCommand("DELETE FROM konut_adlari where konut_adlari_ID="+mulkid+"", mysqlbaglan);
+                konut_adlari_sil.ExecuteNonQuery();
+                MySqlCommand konut_konum_sil = new MySqlCommand("DELETE FROM konutlar_konum where konut_konum_ID="+mulkid+"", mysqlbaglan);
+                konut_konum_sil.ExecuteNonQuery();
+                MySqlCommand konut_adres_sil = new MySqlCommand("DELETE FROM konut_adresler where konut_adres_ID="+mulkid+"", mysqlbaglan);
+                konut_adres_sil.ExecuteNonQuery();
+                MySqlCommand konut_bina_sil = new MySqlCommand("DELETE FROM bina where bina_ID="+mulkid+"", mysqlbaglan);
+                konut_bina_sil.ExecuteNonQuery();
+            }
+        }
+    }
+}
+
+--silme_islemi.cs(Müşteri listeliyor)--
+using System;
+using System.Collections.Generic;
+using System.ComponentModel;
+using System.Data;
+using System.Drawing;
+using System.Linq;
+using System.Text;
+using System.Threading.Tasks;
+using System.Windows.Forms;
+using MySql.Data;
+using MySql.Data.MySqlClient;
+namespace emlak_otomasyonu
+{    
+    public partial class silme_islemi : Form
+    {
+        string ad, soyad, tel, eposta, emlak_turu;
+        int secilen_id;
+        public MySqlConnection mysqlbaglan = new MySqlConnection("Server='';Database=emlak_sistemi;Uid=yeni;Pwd=123;Port=3306");
+
+        private void dataGridView1_CellClick(object sender, DataGridViewCellEventArgs e)
+        {
+            secilen_id = (int)dataGridView1.CurrentRow.Cells[0].Value;
+            musterisec gonder_id = new musterisec();
+         
+            gonder_id.satici_no = secilen_id;
+            MessageBox.Show("Gönderildi");
+            this.Close();
+            gonder_id.ShowDialog();
+
+        }
+
+        public silme_islemi()
+        {
+            InitializeComponent();
+        }
+
+        private void silme_islemi_Load(object sender, EventArgs e)
+        {
+            try
+            {
+                mysqlbaglan.Open(); //oluşturtuğumuz tanımı çalıştırarak açılmasını sağlıyoruz
+                if (mysqlbaglan.State != ConnectionState.Closed) // tanımın durumunu kontrol ediyoruz bağlı mı değil mi
+                {
+                    //MessageBox.Show("Bağlantı Başarılı Bir Şekilde Gerçekleşti");  bağlı ise buradaki işlemler gerçekleşiyor
+                }
+                else
+                {
+                    // MessageBox.Show("Maalesef Bağlantı Yapılamadı...!"); // bağlı değilse buradaki işlemler gerçekleşiyor
+                }
+            }
+            catch (Exception err)
+            {
+                MessageBox.Show("Hata! " + err.Message, "Hata Oluştu", MessageBoxButtons.OK, MessageBoxIcon.Error);
+            }
+
+
+            MySqlDataAdapter listele = new MySqlDataAdapter("select * from musteri_bilgiler", mysqlbaglan);
+            DataTable oku = new DataTable();
+            listele.Fill(oku);
+            dataGridView1.DataSource = oku;
+            dataGridView1.Columns[0].HeaderText = "ID";
+            dataGridView1.Columns[1].HeaderText = "Müşteri Ad";
+            dataGridView1.Columns[2].HeaderText = "Müşteri Soyad";
+            dataGridView1.Columns[4].HeaderText = "Müşteri E-posta";
+            dataGridView1.Columns[3].HeaderText = "Müşteri Tel";
+            dataGridView1.Columns[5].HeaderText = "Açıklama";
+            dataGridView1.Columns[6].HeaderText = "Emlak Türü";
+        }
+
+        private void cmbliste_SelectedIndexChanged(object sender, EventArgs e)
+        {
+            if (cmbliste.SelectedIndex == 0)
+            {
+                txtad.Enabled = true;
+                txtemlak_turu.Enabled = false;
+                txteposta.Enabled = false;
+                txtsoyad.Enabled = false;
+                txttel.Enabled = false;
+            }
+            else if (cmbliste.SelectedIndex==1)
+            {
+                txtad.Enabled = false;
+                txtemlak_turu.Enabled = false;
+                txteposta.Enabled = false;
+                txtsoyad.Enabled = true;
+                txttel.Enabled = false;
+
+            }
+            else if (cmbliste.SelectedIndex ==2)
+            {
+                txtad.Enabled = true;
+                txtemlak_turu.Enabled = false;
+                txteposta.Enabled = false;
+                txtsoyad.Enabled = true;
+                txttel.Enabled = false;
+
+            }
+            else if (cmbliste.SelectedIndex == 3)
+            {
+                txtad.Enabled = false;
+                txtemlak_turu.Enabled = false;
+                txteposta.Enabled = true;
+                txtsoyad.Enabled = false;
+                txttel.Enabled = false;
+
+            }
+            else if (cmbliste.SelectedIndex == 4)
+            {
+                txtad.Enabled = false;
+                txtemlak_turu.Enabled = false;
+                txteposta.Enabled = false;
+                txtsoyad.Enabled = false;
+                txttel.Enabled = true;
+
+            }
+            else if (cmbliste.SelectedIndex == 5)
+            {
+                txtad.Enabled = false;
+                txtemlak_turu.Enabled = true;
+                txteposta.Enabled = false;
+                txtsoyad.Enabled = false;
+                txttel.Enabled = false;
+
+            }
+        }
+
+        private void listele_Click(object sender, EventArgs e)
+        {
+            if (cmbliste.SelectedIndex == 0)
+            {
+                ad = txtad.Text;
+                MySqlDataAdapter kayit_listele = new MySqlDataAdapter("select * from musteri_bilgiler where musteri_ad='" + ad + "'", mysqlbaglan);
+                DataTable oku = new DataTable();
+                kayit_listele.Fill(oku);
+                dataGridView1.DataSource = oku;
+            }
+            else if (cmbliste.SelectedIndex == 1)
+            {
+                soyad = txtsoyad.Text;
+                MySqlDataAdapter kayit_listele = new MySqlDataAdapter("select * from musteri_bilgiler where musteri_soyad='" + soyad + "'", mysqlbaglan);
+                DataTable oku = new DataTable();
+                kayit_listele.Fill(oku);
+                dataGridView1.DataSource = oku;
+            }
+            else if (cmbliste.SelectedIndex == 2)
+            {
+                ad = txtad.Text;
+                soyad = txtsoyad.Text;
+                MySqlDataAdapter kayit_listele = new MySqlDataAdapter("select * from musteri_bilgiler where musteri_soyad='" + soyad + "' and musteri_ad='"+ad+"'", mysqlbaglan);
+                DataTable oku = new DataTable();
+                kayit_listele.Fill(oku);
+                dataGridView1.DataSource = oku;
+            }
+            else if (cmbliste.SelectedIndex == 3)
+            {
+                eposta = txteposta.Text;
+                MySqlDataAdapter kayit_listele = new MySqlDataAdapter("select * from musteri_bilgiler where musteri_eposta='" + eposta + "'", mysqlbaglan);
+                DataTable oku = new DataTable();
+                kayit_listele.Fill(oku);
+                dataGridView1.DataSource = oku;
+            }
+            else if (cmbliste.SelectedIndex == 4)
+            {
+                tel = txttel.Text;
+                MySqlDataAdapter kayit_listele = new MySqlDataAdapter("select * from musteri_bilgiler where musteri_tel='" + tel + "'", mysqlbaglan);
+                DataTable oku = new DataTable();
+                kayit_listele.Fill(oku);
+                dataGridView1.DataSource = oku;
+            }
+            else if (cmbliste.SelectedIndex == 5)
+            {
+                emlak_turu = txtemlak_turu.Text;
+                MySqlDataAdapter kayit_listele = new MySqlDataAdapter("select m.musteriID , m.musteri_ad,m.musteri_soyad,m.musteri_tel,m.musteri_eposta,m.aciklama,m.emlak_turu_ID,e.emlak_turu_ad from musteri_bilgiler m , emlak_turu e where e.emlak_turu_ID=m.emlak_turu_ID and  e.emlak_turu_ad='" + emlak_turu + "'", mysqlbaglan);
+                DataTable oku = new DataTable();
+                kayit_listele.Fill(oku);
+                dataGridView1.DataSource = oku;
+            }
+            else if (cmbliste.SelectedIndex == 6)
+            {
+                MySqlDataAdapter kayit_listele = new MySqlDataAdapter("select * from musteri_bilgiler", mysqlbaglan);
+                DataTable oku = new DataTable();
+                kayit_listele.Fill(oku);
+                dataGridView1.DataSource = oku;
+            }
+        }
+    }
+}
+
+--VERİTABANI KODLARI--
+create database emlak_sistemi;
+use emlak_sistemi;
+create table musteri_bilgiler(
+musteriID int auto_increment primary key not null,
+musteri_ad nvarchar(100) not null,
+musteri_soyad nvarchar(100) not null,
+musteri_tel varchar(20) not null,
+musteri_eposta nvarchar(100) null,
+aciklama nvarchar(100) null
+);
+create table emlak_turu(
+emlak_turu_ID varchar(20) primary key not null,
+emlak_turu_ad varchar(20) not null
+);
+alter table musteri_bilgiler add emlak_turu_ID varchar(20) not null;
+create table konut_ozellikler(
+konut_ozellik_ID int auto_increment primary key not null,
+konut_fiyat int not null,
+kreadiye_uygunluk nvarchar(30) not null,
+metrekare varchar(10) not null,
+oda_sayisi varchar(10) not null,
+konut_adres_ID int not null,
+banyo_sayisi int not null,
+bulundugu_kat int not null,
+balkon_sayisi int not null,
+isitma nvarchar(15) not null,
+musteriID int not null,
+aidat_tutari int not null,
+kayit_tarihi datetime not null,
+bina_ID int not null,
+satis_turu_ID int not null
+);
+create table konut_adlari(
+konut_adlari_ID int auto_increment primary key not null,
+apartman_adi nvarchar(50) not null,
+bina_no varchar(10) not null
+);
+create table konutlar_konum(
+konut_konum_ID int auto_increment primary key not null,
+il_adi varchar(50) not null,
+ilce_adi varchar(50) not null,
+cadde_adi varchar(50) not null,
+mahalle_adi varchar(50) not null
+);
+create table bina(
+bina_ID int auto_increment primary key not null,
+bina_kat_sayisi int not null,
+bina_yasi int not null,
+konut_tipi varchar(20) not null
+);
+create table konut_adresler(
+konut_adres_ID int auto_increment primary key not null,
+konut_konum_ID int not null,
+konut_adlari_ID int not null,
+daire_no int not null
+);
+create table satis_turu(
+satis_turu_ID int auto_increment primary key not null,
+satis_turu_ad nvarchar(30) not null
+);
+alter table musteri_bilgiler add constraint fk_emlak_turu_ID foreign key(emlak_turu_ID) references emlak_turu(emlak_turu_ID);
+alter table konut_ozellikler add constraint fk_konut_adres_ID foreign key(konut_adres_ID) references konut_adresler(konut_adres_ID);
+alter table konut_ozellikler add constraint fk_musteriID foreign key(musteriID) references musteri_bilgiler(musteriID);
+alter table konut_ozellikler add constraint fk_bina_ID foreign key(bina_ID) references bina(bina_ID);
+alter table konut_ozellikler add constraint fk_satis_turu_ID foreign key(satis_turu_ID) references satis_turu(satis_turu_ID);
+alter table konut_adresler add constraint fk_konut_konum_ID foreign key(konut_konum_ID) references konutlar_konum(konut_konum_ID);
+alter table konut_adresler add constraint fk_konut_adlari_ID foreign key(konut_adlari_ID) references konut_adlari(konut_adlari_ID);
+create table arsa_ozellikler(
+arsa_ID int auto_increment primary key not null,
+imar_durum nvarchar(20) not null,
+tapu varchar(20) not null,
+fiyat int not null,
+kreadiye_uygunluk nvarchar(30) not null,
+metrekare varchar(10) not null,
+adano int not null,
+parselno int not null,
+paftano int not null,
+kat_karsiligi int not null,
+kaks int not null,
+arsa_adres_ID int not null,
+musteriID int not null
+);
+create table arsa_adres(
+arsa_adres_ID int auto_increment primary key not null,
+il nvarchar(50) not null,
+ilce nvarchar(50) not null,
+acik_adres  nvarchar(100) not null
+);
+alter table arsa_ozellikler add constraint fk_arsa_adres_ID foreign key(arsa_adres_ID) references arsa_adres(arsa_adres_ID);
+alter table arsa_ozellikler add constraint fk_musteriID foreign key(musteriID) references musteri_bilgiler(musteriID);
+create table isyeri_ozellikler(
+isyeri_ozellik_ID int auto_increment primary key not null,
+fiyat int not null,
+krediye_uygunluk nvarchar(30) not null,
+bina_kat_sayisi int not null,
+isitma nvarchar(15) not null,
+bulundugu_kat int not null,
+devren nvarchar(10) not null,
+isyeri_adres_ID int not null,
+musteriID int not null,
+aciklama nvarchar(100) not null,
+satis_turu_ID int not null
+);
+create table isyeri_adres(
+isyeri_adres_ID int auto_increment primary key not null,
+il nvarchar(50) not null,
+ilce nvarchar(50) not null,
+cadde nvarchar(50) not null,
+mahalle nvarchar(50) not null
+);
+alter table isyeri_ozellikler add constraint fk_isyeri_adres_ID foreign key(isyeri_adres_ID) references isyeri_adres(isyeri_adres_ID);
+alter table isyeri_ozellikler add constraint fk_musteriID foreign key(musteriID) references musteri_bilgiler(musteriID);
+alter table isyeri_ozellikler add constraint fk_satis_turu_ID foreign key(satis_turu_ID) references satis_turu(satis_turu_ID);
+create table arsa_islemler(
+satilan_arsa_ID int auto_increment primary key not null,
+musteri_ID1 int not null,
+musteri_ID2 int not null,
+arsa_ID int not null,
+arsa_satis_tarihi datetime not null
+);
+alter table arsa_islemler add constraint fk_musteri_ID1 foreign key(musteri_ID1) references musteri_bilgiler(musteriID);
+alter table arsa_islemler add constraint fk_musteri_ID2 foreign key(musteri_ID2) references musteri_bilgiler(musteriID);
+alter table arsa_islemler add constraint fk_arsa_ID foreign key(arsa_ID) references arsa_ozellikler(arsa_ID);
+create table isyeri_islemler(
+satilan_isyeri_ID int auto_increment primary key not null,
+musteri_ID1 int not null,
+musteri_ID2 int not null,
+isyeri_ozellik_ID int not null,
+isyeri_satis_tarihi datetime not null
+);
+alter table isyeri_islemler add constraint fk_musteri_ID1 foreign key(musteri_ID1) references musteri_bilgiler(musteriID);
+alter table isyeri_islemler add constraint fk_musteri_ID2 foreign key(musteri_ID2) references musteri_bilgiler(musteriID);
+alter table isyeri_islemler add constraint fk_isyeri_ozellik_ID foreign key(isyeri_ozellik_ID) references isyeri_ozellikler(isyeri_ozellik_ID);
+
+create table konut_islemler(
+satilan_konut_ID int auto_increment primary key not null,
+musteri_ID1 int not null,
+musteri_ID2 int not null,
+konut_ozellik_ID int not null,
+konut_satis_tarihi datetime not null
+);
+create table personel (
+personel_ID  int auto_increment primary key not null,
+personel_ad  varchar(100) not null,
+personel_soyad  varchar(80) not null,
+personel_eposta  varchar(80) not null,
+personel_telno  varchar(80) not null,
+personel_sifre  varchar(80) not null
+);
+alter table konut_islemler add constraint fk_musteri_ID1 foreign key(musteri_ID1) references musteri_bilgiler(musteriID);
+alter table konut_islemler add constraint fk_musteri_ID2 foreign key(musteri_ID2) references musteri_bilgiler(musteriID);
+alter table konut_islemler add constraint fk_konut_ozellik_ID foreign key(konut_ozellik_ID) references konut_ozellikler(konut_ozellik_ID);
+alter table konut_adresler drop column daire_no;
+alter table konut_adlari add daire_no int not null;
+alter table bina drop column konut_tipi;
+alter table konut_ozellikler add konut_tipi varchar(20) not null;
+
